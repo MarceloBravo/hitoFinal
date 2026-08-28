@@ -1,0 +1,10 @@
+# Perfil seguro de producción: elimina la superficie de ataque de la documentación.
+spring:
+  jpa:
+    show-sql: false
+
+springdoc:
+  api-docs:
+    enabled: false # Bloquea la descarga de la especificación técnica.
+  swagger-ui:
+    enabled: false # Devuelve 404 ante intentos de acceso a la consola web.
