@@ -1,0 +1,99 @@
+package com.mabc.hitoFinal.domain.entity;
+
+import com.mabc.hitoFinal.domain.valueobject.Description;
+import com.mabc.hitoFinal.domain.valueobject.Name;
+import com.mabc.hitoFinal.domain.valueobject.Price;
+import com.mabc.hitoFinal.domain.valueobject.Quantity;
+import com.mabc.hitoFinal.domain.valueobject.Stock;
+import com.mabc.hitoFinal.domain.valueobject.Weight;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class CartTest {
+
+    private Cart cart;
+    private Product product;
+
+    @BeforeEach
+    void setUp() {
+        Mark mark = new Mark(1L, new Name("Lenovo"));
+        product = new Product(1L, mark, List.of(),
+                new Name("Notebook Lenovo"), new Description("Notebook Lenovo IdeaPad 310"),
+                new Stock(12), new Weight(1500), new Price(650000), new Price(800000));
+        cart = new Cart(1L);
+    }
+
+    @Test
+    @DisplayName("Carrito nuevo: inicia vacio con subtotal en cero")
+    void newCartStartsWithZeroSubTotal() {
+        assertTrue(cart.getItems().isEmpty());
+        assertEquals(0.0, cart.getSubTotal());
+        assertNotNull(cart.getCreationDate());
+    }
+
+    @Test
+    @DisplayName("addItem: agrega un item y recalcula el subtotal")
+    void addItemAddsAndRecalculatesSubTotal() {
+        cart.addItem(product, new Quantity(2));
+
+        assertEquals(1, cart.getItems().size());
+        assertEquals(1600000, cart.getSubTotal());
+    }
+
+    @Test
+    @DisplayName("addItem: lanza excepcion si no hay stock suficiente")
+    void addItemRejectsInsufficientStock() {
+        assertThrows(IllegalStateException.class, () -> cart.addItem(product, new Quantity(99)));
+        assertTrue(cart.getItems().isEmpty());
+    }
+
+    @Test
+    @DisplayName("addItem: rechaza producto nulo")
+    void addItemRejectsNullProduct() {
+        assertThrows(NullPointerException.class, () -> cart.addItem(null, new Quantity(1)));
+    }
+
+    @Test
+    @DisplayName("addItem: rechaza cantidad nula")
+    void addItemRejectsNullQuantity() {
+        assertThrows(NullPointerException.class, () -> cart.addItem(product, null));
+    }
+
+    @Test
+    @DisplayName("addItem: acumula el subtotal con varios items")
+    void subTotalAccumulatesAcrossItems() {
+        Product other = new Product(2L, new Mark(1L, new Name("Lenovo")), List.of(),
+                new Name("Mouse"), new Description("Mouse inalambrico"),
+                new Stock(20), new Weight(100), new Price(5000), new Price(10000));
+
+        cart.addItem(product, new Quantity(2));
+        cart.addItem(other, new Quantity(3));
+
+        assertEquals(2, cart.getItems().size());
+        assertEquals(1630000, cart.getSubTotal());
+    }
+
+    @Test
+    @DisplayName("calculateSubTotal: recalcula el subtotal desde los items")
+    void calculateSubTotalRecomputes() {
+        cart.addItem(product, new Quantity(2));
+        assertEquals(1600000, cart.getSubTotal());
+
+        cart.calculateSubTotal();
+        assertEquals(1600000, cart.getSubTotal());
+    }
+
+    @Test
+    @DisplayName("getItems: devuelve una lista no modificable")
+    void itemsAreUnmodifiable() {
+        assertThrows(UnsupportedOperationException.class, () -> cart.getItems().add(null));
+    }
+}
