@@ -1,3 +1,4 @@
+# Backend
 HELP.md
 backend/target/
 backend/.mvn/wrapper/maven-wrapper.jar
@@ -5,7 +6,7 @@ backend/.mvn/wrapper/maven-wrapper.jar
 !**/src/test/**/target/
 
 ### Environment variables ###
-.env
+backend/.env
 
 ### STS ###
 .apt_generated
@@ -32,7 +33,24 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+# Frontend
+frontend/node_modules
+frontend/dist
+frontend/dist-ssr
+*.local
+
 ### VS Code ###
-.vscode/
+.vscode/*
+!.vscode/extensions.json
+frontend/.idea
+frontend/.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+frontend/.env
+*.pdf
+.guía.txt
 
 *.pdf

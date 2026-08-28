@@ -1,0 +1,64 @@
+:host {
+    display: block;
+    width: 100%;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: #ffffff;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.08);
+}
+
+.brand-block {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.brand-mark {
+    font-size: 1.6rem;
+}
+
+h1 {
+    margin: 0;
+    color: #111827;
+    font-size: 1.2rem;
+}
+
+p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.95rem;
+}
+
+.top-nav {
+    display: flex;
+    gap: 1.25rem;
+}
+
+.top-nav a {
+    text-decoration: none;
+    color: #374151;
+    font-weight: 600;
+}
+
+.cart-btn {
+    border: none;
+    background: #111827;
+    color: white;
+    padding: 0.7rem 1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+@media (max-width: 768px) {
+    .topbar {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+}

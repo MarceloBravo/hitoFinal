@@ -1,0 +1,108 @@
+:host {
+    display: block;
+    width: 100%;
+}
+
+.page-404 {
+    min-height: 50vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 1.5rem 8rem;
+    background: #f9f9ff;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #151c27;
+}
+
+.page-404__card {
+    width: min(100%, 640px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    text-align: center;
+}
+
+.page-404__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.page-404__icon {
+    font-size: 64px;
+    line-height: 1;
+    color: #5f5e5e;
+}
+
+.page-404__code {
+    margin: 0;
+    font-size: 120px;
+    line-height: 120px;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    color: #151c27;
+}
+
+.page-404__heading {
+    margin: 0;
+    font-size: 24px;
+    line-height: 32px;
+    font-weight: 600;
+    color: #151c27;
+}
+
+.page-404__description {
+    margin: 0;
+    max-width: 400px;
+    font-size: 18px;
+    line-height: 28px;
+    color: #444748;
+}
+
+.page-404__action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 25%;
+    min-width: 210px;
+    height: 48px;
+    padding: 0 1.5rem;
+    border-radius: 999px;
+    background: #0051d5;
+    color: #ffffff;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.page-404__action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(0, 81, 213, 0.2);
+}
+
+@media (max-width: 640px) {
+    .page-404 {
+        padding: 3rem 1rem 5rem;
+    }
+
+    .page-404__code {
+        font-size: 96px;
+        line-height: 96px;
+    }
+
+    .page-404__heading {
+        font-size: 22px;
+        line-height: 30px;
+    }
+
+    .page-404__description {
+        font-size: 16px;
+        line-height: 24px;
+    }
+}

@@ -1,0 +1,57 @@
+/* Scoped styles for the contact page. Prefixed with .contact-page to avoid collisions. */
+.contact-page {
+	display: block;
+	padding: 1rem;
+}
+
+.contact-page__container {
+	max-width: 720px;
+	margin: 0 auto;
+	background: #ffffff;
+	padding: 1.25rem;
+	border-radius: 8px;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.contact-page__container h2 {
+	margin-top: 0;
+}
+
+.contact-page__container form > div {
+	margin-bottom: 0.75rem;
+}
+
+.contact-page__input,
+.contact-page__textarea {
+	width: 100%;
+	padding: 0.5rem;
+	border: 1px solid #d1d5db;
+	border-radius: 6px;
+	box-sizing: border-box;
+}
+
+.contact-page__textarea {
+	min-height: 100px;
+}
+
+.contact-page__submit {
+	background-color: #4338ca;
+	color: #fff;
+	border: none;
+	padding: 0.6rem 1rem;
+	border-radius: 6px;
+	cursor: pointer;
+}
+
+.contact-page__submit:hover {
+	background-color: #3730a3;
+}
+
+/* Utility: style anchor inside host if needed */
+.contact-page a {
+	color: #4338ca;
+}
+
+.contact-error{
+	color: red;
+}
