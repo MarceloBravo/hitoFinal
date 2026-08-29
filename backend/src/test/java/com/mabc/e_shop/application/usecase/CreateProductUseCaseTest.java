@@ -43,7 +43,7 @@ class CreateProductUseCaseTest {
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> {
             Product product = invocation.getArgument(0);
             if(product.getId() == null){
-                product = new Product(1L, product.getMark(), product.getCategories(), product.getName(), product.getDescription(), product.getStock(), product.getWeight(), product.getPriceCost(), product.getPriceSale());
+                product = new Product(1L, product.getMark(), product.getCategories(), product.getName(), product.getDescription(), product.getStock(), product.getWeight(), product.getPriceCost(), product.getPriceSale(), product.getImagePath());
             }
             storedProducts.add(product);
             return product;
@@ -64,7 +64,8 @@ class CreateProductUseCaseTest {
     @DisplayName("Crea un producto nuevo con sus value objects")
     void createsProduct() {
         Product product = useCase.execute(null, 1L, List.of(1L),
-                "Notebook Lenovo", "Notebook Lenovo IdeaPad 310", 12, 1500, 650000, 800000);
+                "Notebook Lenovo", "Notebook Lenovo IdeaPad 310", 12, 1500, 650000, 800000,
+                "https://images.example.com/products/notebook.png");
 
         assertNotNull(product);
         assertEquals("Notebook Lenovo", product.getName().value());
@@ -76,10 +77,12 @@ class CreateProductUseCaseTest {
     @DisplayName("Actualiza un producto existente manteniendo el id")
     void updatesProductKeepingId() {
         Product existing = useCase.execute(null, 1L, List.of(1L),
-                "Old", "Desc", 10, 1500, 650000, 800000);
+                "Old", "Desc", 10, 1500, 650000, 800000,
+                "https://images.example.com/products/notebook.png");
 
         Product updated = useCase.execute(existing.getId(), 1L, List.of(1L),
-                "New", "Desc2", 5, 1500, 700000, 900000);
+                "New", "Desc2", 5, 1500, 700000, 900000,
+                "https://images.example.com/products/notebook.png");
 
         assertEquals(existing.getId(), updated.getId());
         assertEquals("New", updated.getName().value());
@@ -91,28 +94,32 @@ class CreateProductUseCaseTest {
     @DisplayName("Lanza excepcion si la marca no existe")
     void rejectsWhenMarkNotExists() {
         assertThrows(IllegalArgumentException.class, () -> useCase.execute(
-                null, 999L, List.of(1L), "Name", "Desc", 1, 1500, 1, 2));
+                null, 999L, List.of(1L), "Name", "Desc", 1, 1500, 1, 2,
+                "https://images.example.com/products/notebook.png"));
     }
 
     @Test
     @DisplayName("Lanza excepcion si alguna categoria no existe")
     void rejectsWhenCategoryNotExists() {
         assertThrows(IllegalArgumentException.class, () -> useCase.execute(
-                null, 1L, List.of(999L), "Name", "Desc", 1, 1500, 1, 2));
+                null, 1L, List.of(999L), "Name", "Desc", 1, 1500, 1, 2,
+                "https://images.example.com/products/notebook.png"));
     }
 
     @Test
     @DisplayName("Lanza excepcion si se actualiza un producto inexistente")
     void rejectsUpdatingMissingProduct() {
         assertThrows(IllegalArgumentException.class, () -> useCase.execute(
-                99L, 1L, List.of(1L), "Name", "Desc", 1, 1500, 1, 2));
+                99L, 1L, List.of(1L), "Name", "Desc", 1, 1500, 1, 2,
+                "https://images.example.com/products/notebook.png"));
     }
 
     @Test
     @DisplayName("Lanza excepcion si la lista de categorias esta vacia")
     void rejectsEmptyCategoryList() {
         assertThrows(IllegalArgumentException.class, () -> useCase.execute(
-                null, 1L, List.of(), "Name", "Desc", 1, 1500, 1, 2));
+                null, 1L, List.of(), "Name", "Desc", 1, 1500, 1, 2,
+                "https://images.example.com/products/notebook.png"));
     }
 
     /*
@@ -120,9 +127,11 @@ class CreateProductUseCaseTest {
     @DisplayName("Asigna un id incremental cuando se crean varios productos")
     void assignsIncrementalIds() {
         Product first = useCase.execute(null, 1L, List.of(1L),
-                "Producto 1", "Desc", 1, 1500, 1, 2);
+                "Producto 1", "Desc", 1, 1500, 1, 2,
+                "https://images.example.com/products/notebook.png");
         Product second = useCase.execute(null, 1L, List.of(1L),
-                "Producto 2", "Desc", 1, 1500, 1, 2);
+                "Producto 2", "Desc", 1, 1500, 1, 2,
+                "https://images.example.com/products/notebook.png");
 
         assertEquals(1L, first.getId());
         assertEquals(2L, second.getId());

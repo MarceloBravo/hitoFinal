@@ -8,6 +8,7 @@ import com.mabc.e_shop.domain.entity.Category;
 import com.mabc.e_shop.domain.entity.Mark;
 import com.mabc.e_shop.domain.entity.Product;
 import com.mabc.e_shop.domain.valueobject.Description;
+import com.mabc.e_shop.domain.valueobject.ImagePath;
 import com.mabc.e_shop.domain.valueobject.Name;
 import com.mabc.e_shop.domain.valueobject.Price;
 import com.mabc.e_shop.domain.valueobject.Quantity;
@@ -75,7 +76,8 @@ class CartControllerTest {
         return new Product(
                 3L, new Mark(1L, new Name("Lenovo")), java.util.List.of(new Category(2L, new Name("Gaming"))),
                 new Name("Notebook"), new Description("Equipo portátil"),
-                new Stock(10), new Weight(2.5), new Price(500.0), new Price(50.0));
+                new Stock(10), new Weight(2.5), new Price(500.0), new Price(50.0),
+                new ImagePath("https://images.example.com/products/notebook.png"));
     }
 
     @Test

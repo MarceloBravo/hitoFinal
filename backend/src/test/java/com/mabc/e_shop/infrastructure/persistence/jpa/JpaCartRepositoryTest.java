@@ -36,6 +36,7 @@ class JpaCartRepositoryTest {
         product.setWeight(1500);
         product.setPriceCost(650000);
         product.setPriceSale(800000);
+        product.setImagePath("https://images.example.com/products/notebook.png");
         return product;
     }
 

@@ -1,6 +1,7 @@
 package com.mabc.e_shop.domain.entity;
 
 import com.mabc.e_shop.domain.valueobject.Description;
+import com.mabc.e_shop.domain.valueobject.ImagePath;
 import com.mabc.e_shop.domain.valueobject.Name;
 import com.mabc.e_shop.domain.valueobject.Price;
 import com.mabc.e_shop.domain.valueobject.Quantity;
@@ -31,6 +32,7 @@ public class Product {
     private Weight weight;
     private Price priceCost;
     private Price priceSale;
+    private ImagePath imagePath;
 
     /**
      * Crea un producto con todos sus atributos.
@@ -55,7 +57,8 @@ public class Product {
         Stock stock, 
         Weight weight, 
         Price priceCost, 
-        Price priceSale
+        Price priceSale,
+        ImagePath imagePath
     ) {
         this.id = id;
         this.mark = Objects.requireNonNull(mark, "La marca del producto no puede ser nula.");
@@ -66,6 +69,7 @@ public class Product {
         this.weight = Objects.requireNonNull(weight, "El peso del producto no puede ser nulo.");
         this.priceCost = Objects.requireNonNull(priceCost, "El precio de costo no puede ser nulo.");
         this.priceSale = Objects.requireNonNull(priceSale, "El precio de venta no puede ser nulo.");
+        this.imagePath = Objects.requireNonNull(imagePath, "La imagen no puede ser nula.");
     }
 
     /**
@@ -149,6 +153,10 @@ public class Product {
         return priceSale;
     }
 
+    public ImagePath getImagePath(){
+        return imagePath;
+    }
+
     /**
      * Renombra el producto.
      *
@@ -212,5 +220,9 @@ public class Product {
             throw new IllegalStateException("Stock insuficiente para el producto " + name.value());
         }
         this.stock = new Stock(this.stock.value() - quantity.value());
+    }
+
+    public void updateImagePath(ImagePath newImage){
+        this.imagePath = Objects.requireNonNull(newImage, "La imagen no puede ser nula.");
     }
 }

@@ -4,6 +4,7 @@ import com.mabc.e_shop.domain.entity.Category;
 import com.mabc.e_shop.domain.entity.Mark;
 import com.mabc.e_shop.domain.entity.Product;
 import com.mabc.e_shop.domain.valueobject.Description;
+import com.mabc.e_shop.domain.valueobject.ImagePath;
 import com.mabc.e_shop.domain.valueobject.Name;
 import com.mabc.e_shop.domain.valueobject.Price;
 import com.mabc.e_shop.domain.valueobject.Stock;
@@ -28,7 +29,8 @@ class ProductHttpMapperTest {
                 new Category(3L, new Name("Oficina")));
         Product product = new Product(
                 5L, mark, categories, new Name("Notebook"), new Description("Equipo portátil"),
-                new Stock(10), new Weight(2.5), new Price(500.0), new Price(700.0));
+                new Stock(10), new Weight(2.5), new Price(500.0), new Price(700.0),
+                new ImagePath("https://images.example.com/products/notebook.png"));
 
         ProductResponseDto response = ProductHttpMapper.toResponse(product);
 
@@ -42,6 +44,7 @@ class ProductHttpMapperTest {
         assertEquals(2.5, response.weight());
         assertEquals(500.0, response.priceCost());
         assertEquals(700.0, response.priceSale());
+        assertEquals("https://images.example.com/products/notebook.png", response.imagePath());
     }
 
     @Test
@@ -49,7 +52,8 @@ class ProductHttpMapperTest {
     void mapsProductWithoutCategories() {
         Product product = new Product(
                 6L, new Mark(1L, new Name("Lenovo")), null, new Name("Mouse"), new Description("Periférico"),
-                new Stock(5), new Weight(0.2), new Price(10.0), new Price(15.0));
+                new Stock(5), new Weight(0.2), new Price(10.0), new Price(15.0),
+                new ImagePath("https://images.example.com/products/mouse.png"));
 
         assertTrue(ProductHttpMapper.toResponse(product).categoryIds().isEmpty());
     }

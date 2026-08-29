@@ -126,7 +126,9 @@ public class ProductController {
                 request.stock(),
                 request.weight(),
                 request.priceCost(),
-                request.priceSale());
+                request.priceSale(),
+                request.imagePath()
+                );
         return ResponseEntity.status(201).body(ApiResponseFactory.created(
                 "Producto creado correctamente.", ProductHttpMapper.toResponse(product)));
     }
@@ -162,7 +164,9 @@ public class ProductController {
                 request.stock(),
                 request.weight(),
                 request.priceCost(),
-                request.priceSale());
+                request.priceSale(),
+                request.imagePath()
+                );
         return ResponseEntity.ok().body(ApiResponseFactory.updated(
                 "Producto actualizado correctamente.", ProductHttpMapper.toResponse(product)));
     }

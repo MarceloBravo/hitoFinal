@@ -22,6 +22,7 @@ class DomainExceptionsTest {
         String message = "mensaje";
 
         assertEquals(message, new InvalidDescriptionException(message).getMessage());
+        assertEquals(message, new InvalidImageException(message).getMessage());
         assertEquals(message, new InvalidNameException(message).getMessage());
         assertEquals(message, new InvalidPriceException(message).getMessage());
         assertEquals(message, new InvalidQuantityException(message).getMessage());

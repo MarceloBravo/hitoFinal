@@ -31,6 +31,7 @@ public final class ProductHttpMapper {
                 product.getStock().value(),
                 product.getWeight().value(),
                 product.getPriceCost().value(),
-                product.getPriceSale().value());
+                product.getPriceSale().value(),
+                product.getImagePath().value());
     }
 }

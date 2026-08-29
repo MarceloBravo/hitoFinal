@@ -25,6 +25,7 @@ class ProductEntityTest {
         assertEquals(0.0, entity.getWeight());
         assertEquals(0.0, entity.getPriceCost());
         assertEquals(0.0, entity.getPriceSale());
+        assertNull(entity.getImagePath());
     }
 
     @Test
@@ -44,6 +45,7 @@ class ProductEntityTest {
         entity.setWeight(1500.0);
         entity.setPriceCost(650000.0);
         entity.setPriceSale(800000.0);
+        entity.setImagePath("https://images.example.com/products/notebook.png");
 
         assertEquals(9L, entity.getId());
         assertSame(mark, entity.getMark());
@@ -54,5 +56,6 @@ class ProductEntityTest {
         assertEquals(1500.0, entity.getWeight());
         assertEquals(650000.0, entity.getPriceCost());
         assertEquals(800000.0, entity.getPriceSale());
+        assertEquals("https://images.example.com/products/notebook.png", entity.getImagePath());
     }
 }

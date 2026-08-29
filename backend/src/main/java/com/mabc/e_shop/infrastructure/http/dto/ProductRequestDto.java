@@ -20,6 +20,7 @@ import java.util.List;
  * @param weight      peso del producto en kilogramos; positivo.
  * @param priceCost   precio de costo del producto; cero o positivo.
  * @param priceSale   precio de venta del producto; cero o positivo.
+ * @param imagePath   ruta de la ubicación de la imagen.
  */
 public record ProductRequestDto(
     @Schema(description = "Identificador de la marca del producto.", example = "1")
@@ -41,6 +42,8 @@ public record ProductRequestDto(
     @PositiveOrZero(message = "El precio de costo no puede ser negativo.") Double priceCost,
     @Schema(description = "Precio de venta al público del producto.", example = "700.0")
     @NotNull(message = "El precio de venta es obligatorio.")
-    @PositiveOrZero(message = "El precio de venta no puede ser negativo.") Double priceSale
+    @PositiveOrZero(message = "El precio de venta no puede ser negativo.") Double priceSale,
+    @Schema(description = "Ubicación de la imagen del producto.", example = "D:/app/uploads/foto.png")
+    @NotBlank(message = "La ruta de la imagen del producto es obligatoria.") String imagePath
 ) {
 }

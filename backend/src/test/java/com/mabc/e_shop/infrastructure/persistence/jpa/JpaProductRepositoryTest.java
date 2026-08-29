@@ -4,6 +4,7 @@ import com.mabc.e_shop.domain.entity.Category;
 import com.mabc.e_shop.domain.entity.Mark;
 import com.mabc.e_shop.domain.entity.Product;
 import com.mabc.e_shop.domain.valueobject.Description;
+import com.mabc.e_shop.domain.valueobject.ImagePath;
 import com.mabc.e_shop.domain.valueobject.Name;
 import com.mabc.e_shop.domain.valueobject.Price;
 import com.mabc.e_shop.domain.valueobject.Stock;
@@ -42,6 +43,7 @@ class JpaProductRepositoryTest {
         entity.setWeight(1500);
         entity.setPriceCost(650000);
         entity.setPriceSale(800000);
+        entity.setImagePath("https://images.example.com/products/notebook.png");
         return entity;
     }
 
@@ -50,7 +52,8 @@ class JpaProductRepositoryTest {
         Category category = new Category(1L, new Name("Computacion"));
         return new Product(1L, mark, List.of(category),
                 new Name("Notebook Lenovo"), new Description("Notebook Lenovo IdeaPad 310"),
-                new Stock(12), new Weight(1500), new Price(650000), new Price(800000));
+                new Stock(12), new Weight(1500), new Price(650000), new Price(800000),
+                new ImagePath("https://images.example.com/products/notebook.png"));
     }
 
     @Test

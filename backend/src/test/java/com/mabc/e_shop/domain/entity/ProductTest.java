@@ -1,6 +1,7 @@
 package com.mabc.e_shop.domain.entity;
 
 import com.mabc.e_shop.domain.valueobject.Description;
+import com.mabc.e_shop.domain.valueobject.ImagePath;
 import com.mabc.e_shop.domain.valueobject.Name;
 import com.mabc.e_shop.domain.valueobject.Price;
 import com.mabc.e_shop.domain.valueobject.Quantity;
@@ -27,7 +28,8 @@ class ProductTest {
         Category category = new Category(1L, new Name("Computacion"));
         product = new Product(1L, mark, List.of(category),
                 new Name("Notebook Lenovo"), new Description("Notebook Lenovo IdeaPad 310"),
-                new Stock(12), new Weight(1500), new Price(650000), new Price(800000));
+                new Stock(12), new Weight(1500), new Price(650000), new Price(800000),
+                new ImagePath("https://images.example.com/products/notebook.png"));
     }
 
     @Test
@@ -87,6 +89,20 @@ class ProductTest {
     }
 
     @Test
+    @DisplayName("getImagePath: recupera la ruta de la imagen")
+    void gettersReturnImagePath() {
+        assertEquals("https://images.example.com/products/notebook.png", product.getImagePath().value());
+    }
+
+    @Test
+    @DisplayName("updateImagePath: actualiza la ruta de la imagen")
+    void updateImagePathUpdatesValue() {
+        product.updateImagePath(new ImagePath("https://images.example.com/products/notebook-v2.png"));
+
+        assertEquals("https://images.example.com/products/notebook-v2.png", product.getImagePath().value());
+    }
+
+    @Test
     @DisplayName("Mutadores: rechazan argumentos nulos")
     void mutatorsRejectNullArguments() {
         assertThrows(NullPointerException.class, () -> product.rename(null));
@@ -94,6 +110,7 @@ class ProductTest {
         assertThrows(NullPointerException.class, () -> product.restock(null));
         assertThrows(NullPointerException.class, () -> product.updatePrices(null, new Price(1)));
         assertThrows(NullPointerException.class, () -> product.updatePrices(new Price(1), null));
+        assertThrows(NullPointerException.class, () -> product.updateImagePath(null));
     }
 
     @Test

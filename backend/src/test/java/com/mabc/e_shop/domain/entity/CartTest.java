@@ -1,6 +1,7 @@
 package com.mabc.e_shop.domain.entity;
 
 import com.mabc.e_shop.domain.valueobject.Description;
+import com.mabc.e_shop.domain.valueobject.ImagePath;
 import com.mabc.e_shop.domain.valueobject.Name;
 import com.mabc.e_shop.domain.valueobject.Price;
 import com.mabc.e_shop.domain.valueobject.Quantity;
@@ -27,7 +28,8 @@ class CartTest {
         Mark mark = new Mark(1L, new Name("Lenovo"));
         product = new Product(1L, mark, List.of(),
                 new Name("Notebook Lenovo"), new Description("Notebook Lenovo IdeaPad 310"),
-                new Stock(12), new Weight(1500), new Price(650000), new Price(800000));
+                new Stock(12), new Weight(1500), new Price(650000), new Price(800000),
+                new ImagePath("https://images.example.com/products/notebook.png"));
         cart = new Cart(1L);
     }
 
@@ -72,7 +74,8 @@ class CartTest {
     void subTotalAccumulatesAcrossItems() {
         Product other = new Product(2L, new Mark(1L, new Name("Lenovo")), List.of(),
                 new Name("Mouse"), new Description("Mouse inalambrico"),
-                new Stock(20), new Weight(100), new Price(5000), new Price(10000));
+                new Stock(20), new Weight(100), new Price(5000), new Price(10000),
+                new ImagePath("https://images.example.com/products/mouse.png"));
 
         cart.addItem(product, new Quantity(2));
         cart.addItem(other, new Quantity(3));

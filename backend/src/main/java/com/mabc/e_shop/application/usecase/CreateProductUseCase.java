@@ -7,6 +7,7 @@ import com.mabc.e_shop.domain.repository.CategoryRepository;
 import com.mabc.e_shop.domain.repository.MarkRepository;
 import com.mabc.e_shop.domain.repository.ProductRepository;
 import com.mabc.e_shop.domain.valueobject.Description;
+import com.mabc.e_shop.domain.valueobject.ImagePath;
 import com.mabc.e_shop.domain.valueobject.Name;
 import com.mabc.e_shop.domain.valueobject.Price;
 import com.mabc.e_shop.domain.valueobject.Stock;
@@ -55,6 +56,7 @@ public class CreateProductUseCase {
      * @param weight      peso del producto.
      * @param priceCost   precio de costo del producto.
      * @param priceSale   precio de venta del producto.
+     * @param imagePath   ruta donde se aloja la imagen del producto.
      * @return el producto creado o actualizado y persistido.
      * @throws IllegalArgumentException si la marca no existe o alguna
      *                                  categoría no existe.
@@ -68,7 +70,8 @@ public class CreateProductUseCase {
         int stock, 
         double weight, 
         double priceCost, 
-        double priceSale
+        double priceSale,
+        String imagePath
     ) {
         Mark mark = markRepository.findById(markId)
                 .orElseThrow(() -> new IllegalArgumentException("La marca no existe."));
@@ -81,7 +84,7 @@ public class CreateProductUseCase {
         Product product;
         if (id == null) {
             product = new Product(null, mark, categories, new Name(name), new Description(description),
-                    new Stock(stock), new Weight(weight), new Price(priceCost), new Price(priceSale));
+                    new Stock(stock), new Weight(weight), new Price(priceCost), new Price(priceSale), new ImagePath(imagePath));
         } else {
             product = productRepository.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("El producto no existe."));
@@ -89,6 +92,7 @@ public class CreateProductUseCase {
             product.updateDescription(new Description(description));
             product.restock(new Stock(stock));
             product.updatePrices(new Price(priceCost), new Price(priceSale));
+            product.updateImagePath(new ImagePath(imagePath));
         }
 
         return productRepository.save(product);

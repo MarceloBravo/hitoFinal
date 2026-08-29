@@ -5,6 +5,7 @@ import com.mabc.e_shop.domain.entity.Product;
 import com.mabc.e_shop.domain.exception.ResourceNotFoundException;
 import com.mabc.e_shop.domain.repository.ProductRepository;
 import com.mabc.e_shop.domain.valueobject.Description;
+import com.mabc.e_shop.domain.valueobject.ImagePath;
 import com.mabc.e_shop.domain.valueobject.Name;
 import com.mabc.e_shop.domain.valueobject.Price;
 import com.mabc.e_shop.domain.valueobject.Stock;
@@ -38,7 +39,8 @@ class GetProductByIdUseCaseTest {
         Mark mark = new Mark(1L, new Name("Lenovo"));
         Product product = new Product(5L, mark, List.of(), new Name("Notebook"),
                 new Description("Equipo portátil"), new Stock(10), new Weight(2.5),
-                new Price(500.0), new Price(700.0));
+                new Price(500.0), new Price(700.0),
+                new ImagePath("https://images.example.com/products/notebook.png"));
         when(productRepository.findById(5L)).thenReturn(Optional.of(product));
 
         assertEquals(product, useCase.execute(5L));

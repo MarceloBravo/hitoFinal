@@ -1,6 +1,7 @@
 package com.mabc.e_shop.domain.valueobject;
 
 import com.mabc.e_shop.domain.exception.InvalidDescriptionException;
+import com.mabc.e_shop.domain.exception.InvalidImageException;
 import com.mabc.e_shop.domain.exception.InvalidNameException;
 import com.mabc.e_shop.domain.exception.InvalidPriceException;
 import com.mabc.e_shop.domain.exception.InvalidQuantityException;
@@ -65,6 +66,22 @@ class ValueObjectsTest {
     }
 
     @Test
+    @DisplayName("ImagePath: acepta una URL o ruta absoluta valida")
+    void imagePathAcceptsValidValue() {
+        assertEquals("https://images.example.com/products/notebook.png",
+                new ImagePath("https://images.example.com/products/notebook.png").value());
+        assertEquals("file:///uploads/foto.png", new ImagePath("file:///uploads/foto.png").value());
+    }
+
+    @Test
+    @DisplayName("ImagePath: rechaza valores nulos, vacios o rutas relativas")
+    void imagePathRejectsNullOrRelative() {
+        assertThrows(InvalidImageException.class, () -> new ImagePath(null));
+        assertThrows(InvalidImageException.class, () -> new ImagePath("   "));
+        assertThrows(InvalidImageException.class, () -> new ImagePath("uploads/foto.png"));
+    }
+
+    @Test
     @DisplayName("Quantity: rechaza cantidades menores o iguales a cero")
     void quantityRejectsZeroOrLess() {
         assertThrows(InvalidQuantityException.class, () -> new Quantity(0));
@@ -94,6 +111,17 @@ class ValueObjectsTest {
     void descriptionEqualityUsesValue() {
         assertEquals(new Description("Notebook"), new Description(" Notebook "));
         assertEquals(new Description("Notebook").hashCode(), new Description(" Notebook ").hashCode());
+    }
+
+    @Test
+    @DisplayName("ImagePath: equals y hashCode se basan en el valor")
+    void imagePathEqualityUsesValue() {
+        assertEquals(new ImagePath("https://images.example.com/products/notebook.png"),
+                new ImagePath("https://images.example.com/products/notebook.png"));
+        assertNotEquals(new ImagePath("https://images.example.com/products/notebook.png"),
+                new ImagePath("https://images.example.com/products/mouse.png"));
+        assertEquals(new ImagePath("https://images.example.com/products/notebook.png").hashCode(),
+                new ImagePath("https://images.example.com/products/notebook.png").hashCode());
     }
 
     @Test
@@ -137,5 +165,7 @@ class ValueObjectsTest {
         assertTrue(new Quantity(3).toString().contains("3"));
         assertTrue(new Stock(8).toString().contains("8"));
         assertTrue(new Weight(1.5).toString().contains("1.5"));
+        assertTrue(new ImagePath("https://images.example.com/products/notebook.png")
+                .toString().contains("notebook"));
     }
 }

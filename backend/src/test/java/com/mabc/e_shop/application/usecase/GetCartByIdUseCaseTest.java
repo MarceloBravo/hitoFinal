@@ -7,6 +7,7 @@ import com.mabc.e_shop.domain.entity.Product;
 import com.mabc.e_shop.domain.exception.ResourceNotFoundException;
 import com.mabc.e_shop.domain.repository.CartRepository;
 import com.mabc.e_shop.domain.valueobject.Description;
+import com.mabc.e_shop.domain.valueobject.ImagePath;
 import com.mabc.e_shop.domain.valueobject.Name;
 import com.mabc.e_shop.domain.valueobject.Price;
 import com.mabc.e_shop.domain.valueobject.Quantity;
@@ -41,7 +42,8 @@ class GetCartByIdUseCaseTest {
         Mark mark = new Mark(1L, new Name("Lenovo"));
         Product product = new Product(3L, mark, List.of(new Category(2L, new Name("Gaming"))),
                 new Name("Notebook"), new Description("Equipo portátil"),
-                new Stock(10), new Weight(2.5), new Price(500.0), new Price(50.0));
+                new Stock(10), new Weight(2.5), new Price(500.0), new Price(50.0),
+                new ImagePath("https://images.example.com/products/notebook.png"));
         Cart cart = new Cart(7L);
         cart.addItem(product, new Quantity(2));
         when(cartRepository.findById(7L)).thenReturn(Optional.of(cart));

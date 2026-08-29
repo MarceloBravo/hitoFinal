@@ -40,6 +40,7 @@ class ProductEntityMapperTest {
         entity.setWeight(1500);
         entity.setPriceCost(650000);
         entity.setPriceSale(800000);
+        entity.setImagePath("https://images.example.com/products/notebook.png");
         return entity;
     }
 
@@ -60,6 +61,7 @@ class ProductEntityMapperTest {
         assertEquals(1500, product.getWeight().value());
         assertEquals(650000, product.getPriceCost().value());
         assertEquals(800000, product.getPriceSale().value());
+        assertEquals("https://images.example.com/products/notebook.png", product.getImagePath().value());
     }
 
     @Test
@@ -100,6 +102,7 @@ class ProductEntityMapperTest {
         assertEquals(1500.0, entity.getWeight());
         assertEquals(650000.0, entity.getPriceCost());
         assertEquals(800000.0, entity.getPriceSale());
+        assertEquals("https://images.example.com/products/notebook.png", entity.getImagePath());
     }
 
     @Test

@@ -4,6 +4,7 @@ import com.mabc.e_shop.domain.entity.Category;
 import com.mabc.e_shop.domain.entity.Mark;
 import com.mabc.e_shop.domain.entity.Product;
 import com.mabc.e_shop.domain.valueobject.Description;
+import com.mabc.e_shop.domain.valueobject.ImagePath;
 import com.mabc.e_shop.domain.valueobject.Name;
 import com.mabc.e_shop.domain.valueobject.Price;
 import com.mabc.e_shop.domain.valueobject.Stock;
@@ -54,7 +55,8 @@ public final class ProductEntityMapper {
                 new Stock(entity.getStock()),
                 new Weight(entity.getWeight()),
                 new Price(entity.getPriceCost()),
-                new Price(entity.getPriceSale()));
+                new Price(entity.getPriceSale()),
+                new ImagePath(entity.getImagePath()));
     }
 
     /**
@@ -72,6 +74,7 @@ public final class ProductEntityMapper {
         entity.setWeight(product.getWeight().value());
         entity.setPriceCost(product.getPriceCost().value());
         entity.setPriceSale(product.getPriceSale().value());
+        entity.setImagePath(product.getImagePath().value());
 
         entity.setMark(new MarkEntity(
                 product.getMark().getId(),

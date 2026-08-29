@@ -7,6 +7,7 @@ import com.mabc.e_shop.domain.exception.ResourceNotFoundException;
 import com.mabc.e_shop.domain.repository.CartRepository;
 import com.mabc.e_shop.domain.repository.ProductRepository;
 import com.mabc.e_shop.domain.valueobject.Description;
+import com.mabc.e_shop.domain.valueobject.ImagePath;
 import com.mabc.e_shop.domain.valueobject.Name;
 import com.mabc.e_shop.domain.valueobject.Price;
 import com.mabc.e_shop.domain.valueobject.Stock;
@@ -44,7 +45,8 @@ class AddItemToCartUseCaseTest {
         Mark mark = new Mark(1L, new Name("Lenovo"));
         product = new Product(1L, mark, List.of(),
                 new Name("Notebook Lenovo"), new Description("Notebook Lenovo IdeaPad 310"),
-                new Stock(12), new Weight(1500), new Price(650000), new Price(800000));
+                new Stock(12), new Weight(1500), new Price(650000), new Price(800000),
+                new ImagePath("https://images.example.com/products/notebook.png"));
 
         cart = new Cart(1L);
 

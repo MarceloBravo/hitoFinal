@@ -50,6 +50,8 @@ public class ProductEntity {
 
     private double priceSale;
 
+    private String imagePath;
+
     public ProductEntity() {
     }
 
@@ -124,4 +126,13 @@ public class ProductEntity {
     public void setPriceSale(double priceSale) {
         this.priceSale = priceSale;
     }
+
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+    }
+
 }

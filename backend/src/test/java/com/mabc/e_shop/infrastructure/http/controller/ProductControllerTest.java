@@ -7,6 +7,7 @@ import com.mabc.e_shop.domain.entity.Category;
 import com.mabc.e_shop.domain.entity.Mark;
 import com.mabc.e_shop.domain.entity.Product;
 import com.mabc.e_shop.domain.valueobject.Description;
+import com.mabc.e_shop.domain.valueobject.ImagePath;
 import com.mabc.e_shop.domain.valueobject.Name;
 import com.mabc.e_shop.domain.valueobject.Price;
 import com.mabc.e_shop.domain.valueobject.Stock;
@@ -45,7 +46,8 @@ class ProductControllerTest {
               "stock": 10,
               "weight": 2.5,
               "priceCost": 500.0,
-              "priceSale": 700.0
+              "priceSale": 700.0,
+              "imagePath": "https://images.example.com/products/notebook.png"
             }
             """;
 
@@ -68,7 +70,8 @@ class ProductControllerTest {
                 new Category(3L, new Name("Oficina")));
         return new Product(
                 id, mark, categories, new Name("Notebook"), new Description("Equipo portátil"),
-                new Stock(10), new Weight(2.5), new Price(500.0), new Price(700.0));
+                new Stock(10), new Weight(2.5), new Price(500.0), new Price(700.0),
+                new ImagePath("https://images.example.com/products/notebook.png"));
     }
 
     @Test
@@ -112,7 +115,8 @@ class ProductControllerTest {
     @DisplayName("POST crea un producto y responde 201 con el formato estándar")
     void createsProduct() throws Exception {
         when(createProductUseCase.execute(isNull(), eq(1L), anyList(), eq("Notebook"), eq("Equipo portátil"),
-                eq(10), eq(2.5), eq(500.0), eq(700.0))).thenReturn(buildProduct(5L));
+                eq(10), eq(2.5), eq(500.0), eq(700.0), eq("https://images.example.com/products/notebook.png")))
+                .thenReturn(buildProduct(5L));
 
         mockMvc.perform(post("/api/v1/products")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -132,7 +136,8 @@ class ProductControllerTest {
     @DisplayName("PUT actualiza un producto existente y responde 200")
     void updatesProduct() throws Exception {
         when(createProductUseCase.execute(eq(5L), eq(1L), anyList(), eq("Notebook"), eq("Equipo portátil"),
-                eq(10), eq(2.5), eq(500.0), eq(700.0))).thenReturn(buildProduct(5L));
+                eq(10), eq(2.5), eq(500.0), eq(700.0), eq("https://images.example.com/products/notebook.png")))
+                .thenReturn(buildProduct(5L));
 
         mockMvc.perform(put("/api/v1/products/5")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -155,7 +160,8 @@ class ProductControllerTest {
                   "stock": -1,
                   "weight": 2.5,
                   "priceCost": 500.0,
-                  "priceSale": 700.0
+                  "priceSale": 700.0,
+                  "imagePath": "https://images.example.com/products/notebook.png"
                 }
                 """;
 
@@ -173,7 +179,7 @@ class ProductControllerTest {
     @DisplayName("Propaga la marca inexistente como 404 en el formato estándar")
     void propagatesMissingMarkAs404() throws Exception {
         when(createProductUseCase.execute(isNull(), eq(99L), anyList(), eq("Notebook"), eq("Equipo portátil"),
-                eq(10), eq(2.5), eq(500.0), eq(700.0)))
+                eq(10), eq(2.5), eq(500.0), eq(700.0), eq("https://images.example.com/products/notebook.png")))
                 .thenThrow(new IllegalArgumentException("La marca no existe."));
 
         String jsonWithMissingMark = PRODUCT_JSON.replace("\"markId\": 1", "\"markId\": 99");
