@@ -40,7 +40,7 @@ export class HomePage extends HTMLElement {
         const categories: ResponseInterface<CategoriesResponseApi['data']> = await categoriesService.getAll();
 
         const optionsCategories: string = categories.ok
-            ? categories.data.map((category) => `{"label":"${category.name}","type":"checkbox","checked":false}`).join(',')
+            ? categories.data.data.map((category) => `{"label":"${category.name}","type":"checkbox","checked":false}`).join(',')
             : `{"label": "No fue posible cargar las categorías", "type": "checkbox", "checked": false}`;
 
         const productsData: ProductResponseApi | string = products.ok ? products.data : products.data;

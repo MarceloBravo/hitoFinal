@@ -3,7 +3,8 @@ import type { CategoriesResponseApi } from '../interfaces/categoriesResponseApi.
 import type { ResponseInterface } from '../interfaces/responseInterface.js';
 import { handleError } from '../utils/errorHandler.js';
 
-const URI = '/products/categories';
+//const URI = '/products/categories';
+const URI = '/api/v1/categories';
 
 /**
  * Servicio encargado de consumir los endpoints de categorías de la API.

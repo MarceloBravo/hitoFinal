@@ -1,14 +1,13 @@
+import type { CategoriesInterface } from "./CategoriesInterface";
+
 /**
  * Contrato de la respuesta de categorías devuelta por la API.
  */
 export interface CategoriesResponseApi {
   data: {
-    /** Nombre de la categoría. */
-    name: string;
-    /** Slug identificador de la categoría. */
-    slug: string;
-    /** URL del endpoint de la categoría. */
-    url: string;
+    data: CategoriesInterface[];
+    message: string;
+    statusCode: number;
   }[];
   ok: boolean;
   status: number;
