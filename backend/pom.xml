@@ -8,7 +8,7 @@
 		<version>4.1.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.mabc.hitoFinal</groupId>
+	<groupId>com.mabc.e_shop</groupId>
 	<artifactId>hitoFinal</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
@@ -154,7 +154,7 @@
 							<goal>java</goal>
 						</goals>
 						<configuration>
-							<mainClass>com.mabc.hitoFinal.ConsoleCoverageReporter</mainClass>
+							<mainClass>com.mabc.e_shop.ConsoleCoverageReporter</mainClass>
 							<classpathScope>test</classpathScope>
 						</configuration>
 					</execution>
