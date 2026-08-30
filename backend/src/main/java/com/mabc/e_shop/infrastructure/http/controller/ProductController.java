@@ -4,31 +4,41 @@ import com.mabc.e_shop.application.usecase.CreateProductUseCase;
 import com.mabc.e_shop.application.usecase.GetAllProductsUseCase;
 import com.mabc.e_shop.application.usecase.GetProductByIdUseCase;
 import com.mabc.e_shop.domain.entity.Product;
+import com.mabc.e_shop.domain.valueobject.ImagePath;
 import com.mabc.e_shop.infrastructure.http.dto.ProductRequestDto;
 import com.mabc.e_shop.infrastructure.http.dto.ProductResponseDto;
 import com.mabc.e_shop.infrastructure.http.mapper.ProductHttpMapper;
 import com.mabc.e_shop.infrastructure.http.response.ApiResponse;
 import com.mabc.e_shop.infrastructure.http.response.ApiResponseFactory;
+import com.mabc.e_shop.infrastructure.storage.ImageStorage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.beans.PropertyEditorSupport;
+import java.nio.file.Path;
 import java.util.List;
 
 /**
  * Controlador REST de productos.
  *
  * <p>Expone los endpoints de consulta, creación y actualización de productos
- * delegando la lógica en los casos de uso de la capa de aplicación.
+ * delegando la lógica en los casos de uso de la capa de aplicación. La
+ * creación y actualización reciben multipart/form-data, almacenan la imagen
+ * con {@link ImageStorage} y persisten su ruta absoluta en el producto.
  */
 @Tag(name = "Productos", description = "Consulta, registro y actualización de productos.")
 @RestController
@@ -38,22 +48,45 @@ public class ProductController {
     private final CreateProductUseCase createProductUseCase;
     private final GetAllProductsUseCase getAllProductsUseCase;
     private final GetProductByIdUseCase getProductByIdUseCase;
+    private final ImageStorage imageStorage;
 
     /**
-     * Crea el controlador con los casos de uso de productos.
+     * Crea el controlador con los casos de uso de productos y el almacenamiento de imágenes.
      *
      * @param createProductUseCase  caso de uso que crea o actualiza productos.
      * @param getAllProductsUseCase caso de uso que consulta todos los productos.
      * @param getProductByIdUseCase caso de uso que consulta un producto por id.
+     * @param imageStorage          almacenamiento de las imágenes de los productos.
      */
     public ProductController(
         CreateProductUseCase createProductUseCase,
         GetAllProductsUseCase getAllProductsUseCase,
-        GetProductByIdUseCase getProductByIdUseCase
+        GetProductByIdUseCase getProductByIdUseCase,
+        ImageStorage imageStorage
     ) {
         this.createProductUseCase = createProductUseCase;
         this.getAllProductsUseCase = getAllProductsUseCase;
         this.getProductByIdUseCase = getProductByIdUseCase;
+        this.imageStorage = imageStorage;
+    }
+
+    /**
+     * Permite que el campo {@code image} de la petición llegue como texto vacío
+     * sin fallar el binding: al ser la imagen opcional, una cadena en blanco se
+     * interpreta como ausencia de archivo (valor {@code null}).
+     *
+     * @param binder binder de datos del controlador.
+     */
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(MultipartFile.class, new PropertyEditorSupport() {
+            @Override
+            public void setAsText(String text) {
+                if (text == null || text.isBlank()) {
+                    setValue(null);
+                }
+            }
+        });
     }
 
     /**
@@ -98,12 +131,12 @@ public class ProductController {
     }
 
     /**
-     * Crea un producto nuevo.
+     * Crea un producto nuevo con su imagen.
      *
-     * @param request datos del producto a crear.
+     * @param request datos del producto y archivo de imagen a crear.
      * @return la respuesta estándar con el producto creado y estado HTTP 201.
      */
-    @Operation(summary = "Crea un producto nuevo",
+    @Operation(summary = "Crea un producto nuevo con su imagen",
             description = "Registra un producto validando su marca, categorías y datos de negocio.")
     @ApiResponses(value = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -113,28 +146,41 @@ public class ProductController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "404", description = "Marca o categoría inexistente.")
     })
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<ProductResponseDto>> create(
-        @Valid @RequestBody ProductRequestDto request
+        @Valid @ModelAttribute ProductRequestDto request
     ) {
-        Product product = createProductUseCase.execute(
-                null,
-                request.markId(),
-                request.categoryIds(),
-                request.name(),
-                request.description(),
-                request.stock(),
-                request.weight(),
-                request.priceCost(),
-                request.priceSale(),
-                request.imagePath()
-                );
-        return ResponseEntity.status(201).body(ApiResponseFactory.created(
-                "Producto creado correctamente.", ProductHttpMapper.toResponse(product)));
+        MultipartFile image = request.image();
+        boolean hasImage = image != null && !image.isEmpty();
+        Path stored = hasImage ? imageStorage.store(image) : null;
+        try {
+            Product product = createProductUseCase.execute(
+                    null,
+                    request.markId(),
+                    request.categoryIds(),
+                    request.name(),
+                    request.description(),
+                    request.stock(),
+                    request.weight(),
+                    request.priceCost(),
+                    request.priceSale(),
+                    stored == null ? null : stored.toString()
+                    );
+            return ResponseEntity.status(201).body(ApiResponseFactory.created(
+                    "Producto creado correctamente.", ProductHttpMapper.toResponse(product)));
+        } catch (RuntimeException e) {
+            if (stored != null) {
+                imageStorage.delete(stored);
+            }
+            throw e;
+        }
     }
 
     /**
      * Actualiza un producto existente.
+     *
+     * <p>Si se adjunta una nueva imagen se reemplaza la anterior; en caso
+     * contrario se conserva la ruta de la imagen actual del producto.
      *
      * @param id      identificador del producto a actualizar.
      * @param request nuevos datos del producto.
@@ -150,24 +196,63 @@ public class ProductController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "404", description = "Producto, marca o categoría inexistente.")
     })
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<ProductResponseDto>> update(
         @PathVariable Long id,
-        @Valid @RequestBody ProductRequestDto request
+        @Valid @ModelAttribute ProductRequestDto request
     ) {
-        Product product = createProductUseCase.execute(
-                id,
-                request.markId(),
-                request.categoryIds(),
-                request.name(),
-                request.description(),
-                request.stock(),
-                request.weight(),
-                request.priceCost(),
-                request.priceSale(),
-                request.imagePath()
-                );
-        return ResponseEntity.ok().body(ApiResponseFactory.updated(
-                "Producto actualizado correctamente.", ProductHttpMapper.toResponse(product)));
+        ImagePath currentImage = getProductByIdUseCase.execute(id).getImagePath();
+        MultipartFile image = request.image();
+        boolean replacing = image != null && !image.isEmpty();
+        Path stored = replacing ? imageStorage.store(image) : null;
+
+        try {
+            String imagePath;
+            if (replacing) {
+                imagePath = stored.toString();
+            } else if (currentImage != null) {
+                imagePath = currentImage.value();
+            } else {
+                imagePath = null;
+            }
+            Product product = createProductUseCase.execute(
+                    id,
+                    request.markId(),
+                    request.categoryIds(),
+                    request.name(),
+                    request.description(),
+                    request.stock(),
+                    request.weight(),
+                    request.priceCost(),
+                    request.priceSale(),
+                    imagePath
+                    );
+            if (replacing) {
+                Path previous = pathOf(currentImage == null ? null : currentImage.value());
+                if (previous != null) {
+                    imageStorage.delete(previous);
+                }
+            }
+            return ResponseEntity.ok().body(ApiResponseFactory.updated(
+                    "Producto actualizado correctamente.", ProductHttpMapper.toResponse(product)));
+        } catch (RuntimeException e) {
+            if (stored != null) {
+                imageStorage.delete(stored);
+            }
+            throw e;
+        }
+    }
+
+    private Path pathOf(String imagePath) {
+        if (imagePath == null
+                || imagePath.startsWith("http://")
+                || imagePath.startsWith("https://")) {
+            return null;
+        }
+        try {
+            return Path.of(imagePath);
+        } catch (RuntimeException e) {
+            return null;
+        }
     }
 }

@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ProductHttpMapperTest {
@@ -56,5 +57,15 @@ class ProductHttpMapperTest {
                 new ImagePath("https://images.example.com/products/mouse.png"));
 
         assertTrue(ProductHttpMapper.toResponse(product).categoryIds().isEmpty());
+    }
+
+    @Test
+    @DisplayName("Mapea un producto sin imagen con imagePath nulo")
+    void mapsProductWithoutImage() {
+        Product product = new Product(
+                7L, new Mark(1L, new Name("Lenovo")), null, new Name("Teclado"), new Description("Periférico"),
+                new Stock(5), new Weight(0.8), new Price(20.0), new Price(30.0), null);
+
+        assertNull(ProductHttpMapper.toResponse(product).imagePath());
     }
 }

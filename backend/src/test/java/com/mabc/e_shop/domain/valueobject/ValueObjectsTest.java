@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -74,9 +75,24 @@ class ValueObjectsTest {
     }
 
     @Test
-    @DisplayName("ImagePath: rechaza valores nulos, vacios o rutas relativas")
+    @DisplayName("ImagePath: acepta rutas de archivo locales absolutas")
+    void imagePathAcceptsAbsoluteLocalPath() {
+        String absolute = java.nio.file.Path.of("uploads").toAbsolutePath().resolve("foto.png").toString();
+
+        assertTrue(java.nio.file.Path.of(absolute).isAbsolute());
+        assertEquals(absolute, new ImagePath(absolute).value());
+    }
+
+    @Test
+    @DisplayName("ImagePath: acepta una ruta nula (producto sin imagen)")
+    void imagePathAcceptsNull() {
+        assertNull(new ImagePath(null).value());
+        assertEquals(new ImagePath(null), new ImagePath(null));
+    }
+
+    @Test
+    @DisplayName("ImagePath: rechaza valores vacios o rutas relativas")
     void imagePathRejectsNullOrRelative() {
-        assertThrows(InvalidImageException.class, () -> new ImagePath(null));
         assertThrows(InvalidImageException.class, () -> new ImagePath("   "));
         assertThrows(InvalidImageException.class, () -> new ImagePath("uploads/foto.png"));
     }

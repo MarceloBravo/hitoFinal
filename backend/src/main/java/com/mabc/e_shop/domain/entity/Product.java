@@ -46,6 +46,7 @@ public class Product {
      * @param weight      peso del producto; no puede ser {@code null}.
      * @param priceCost   precio de costo del producto; no puede ser {@code null}.
      * @param priceSale   precio de venta del producto; no puede ser {@code null}.
+     * @param imagePath   imagen del producto; puede ser {@code null}.
      * @throws NullPointerException si alguno de los parámetros requeridos es {@code null}.
      */
     public Product(
@@ -69,7 +70,7 @@ public class Product {
         this.weight = Objects.requireNonNull(weight, "El peso del producto no puede ser nulo.");
         this.priceCost = Objects.requireNonNull(priceCost, "El precio de costo no puede ser nulo.");
         this.priceSale = Objects.requireNonNull(priceSale, "El precio de venta no puede ser nulo.");
-        this.imagePath = Objects.requireNonNull(imagePath, "La imagen no puede ser nula.");
+        this.imagePath = imagePath;
     }
 
     /**
@@ -222,7 +223,12 @@ public class Product {
         this.stock = new Stock(this.stock.value() - quantity.value());
     }
 
+    /**
+     * Actualiza la ruta de la imagen del producto.
+     *
+     * @param newImage la nueva imagen; puede ser {@code null}.
+     */
     public void updateImagePath(ImagePath newImage){
-        this.imagePath = Objects.requireNonNull(newImage, "La imagen no puede ser nula.");
+        this.imagePath = newImage;
     }
 }

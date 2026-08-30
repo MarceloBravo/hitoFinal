@@ -6,11 +6,12 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 /**
- * Cuerpo de petición para crear o actualizar un producto.
+ * Cuerpo de petición, en multipart/form-data, para crear o actualizar un producto.
  *
  * @param markId      identificador de la marca del producto; obligatorio.
  * @param categoryIds identificadores de las categorías del producto; al menos una.
@@ -20,7 +21,7 @@ import java.util.List;
  * @param weight      peso del producto en kilogramos; positivo.
  * @param priceCost   precio de costo del producto; cero o positivo.
  * @param priceSale   precio de venta del producto; cero o positivo.
- * @param imagePath   ruta de la ubicación de la imagen.
+ * @param image       archivo de imagen del producto.
  */
 public record ProductRequestDto(
     @Schema(description = "Identificador de la marca del producto.", example = "1")
@@ -43,7 +44,7 @@ public record ProductRequestDto(
     @Schema(description = "Precio de venta al público del producto.", example = "700.0")
     @NotNull(message = "El precio de venta es obligatorio.")
     @PositiveOrZero(message = "El precio de venta no puede ser negativo.") Double priceSale,
-    @Schema(description = "Ubicación de la imagen del producto.", example = "D:/app/uploads/foto.png")
-    @NotBlank(message = "La ruta de la imagen del producto es obligatoria.") String imagePath
+    @Schema(description = "Archivo de imagen del producto (JPG, PNG o WebP).", format = "binary")
+    MultipartFile image
 ) {
 }

@@ -12,44 +12,40 @@ import com.mabc.e_shop.domain.valueobject.Name;
 import com.mabc.e_shop.domain.valueobject.Price;
 import com.mabc.e_shop.domain.valueobject.Stock;
 import com.mabc.e_shop.domain.valueobject.Weight;
+import com.mabc.e_shop.infrastructure.storage.ImageStorage;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpMethod;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Path;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ProductController.class)
 class ProductControllerTest {
 
-    private static final String PRODUCT_JSON = """
-            {
-              "markId": 1,
-              "categoryIds": [2, 3],
-              "name": "Notebook",
-              "description": "Equipo portátil",
-              "stock": 10,
-              "weight": 2.5,
-              "priceCost": 500.0,
-              "priceSale": 700.0,
-              "imagePath": "https://images.example.com/products/notebook.png"
-            }
-            """;
+    private static final Path STORED_IMAGE = Path.of("C:/uploads/uuid.png");
 
     @Autowired
     private MockMvc mockMvc;
@@ -63,6 +59,9 @@ class ProductControllerTest {
     @MockitoBean
     private GetProductByIdUseCase getProductByIdUseCase;
 
+    @MockitoBean
+    private ImageStorage imageStorage;
+
     private Product buildProduct(Long id) {
         Mark mark = new Mark(1L, new Name("Lenovo"));
         List<Category> categories = List.of(
@@ -72,6 +71,30 @@ class ProductControllerTest {
                 id, mark, categories, new Name("Notebook"), new Description("Equipo portátil"),
                 new Stock(10), new Weight(2.5), new Price(500.0), new Price(700.0),
                 new ImagePath("https://images.example.com/products/notebook.png"));
+    }
+
+    private Product buildProductWithoutImage(Long id) {
+        return new Product(id, new Mark(1L, new Name("Lenovo")),
+                List.of(new Category(2L, new Name("Gaming"))),
+                new Name("Notebook"), new Description("Equipo portátil"),
+                new Stock(10), new Weight(2.5), new Price(500.0), new Price(700.0), null);
+    }
+
+    private MockMultipartFile image(String name) {
+        return new MockMultipartFile("image", name, "image/png", new byte[]{1, 2, 3});
+    }
+
+    private static MockMultipartHttpServletRequestBuilder validMultipartPost() {
+        return multipart("/api/v1/products")
+                .file(new MockMultipartFile("image", "foto.png", "image/png", new byte[]{1, 2, 3}))
+                .param("markId", "1")
+                .param("categoryIds", "2", "3")
+                .param("name", "Notebook")
+                .param("description", "Equipo portátil")
+                .param("stock", "10")
+                .param("weight", "2.5")
+                .param("priceCost", "500.0")
+                .param("priceSale", "700.0");
     }
 
     @Test
@@ -114,13 +137,12 @@ class ProductControllerTest {
     @Test
     @DisplayName("POST crea un producto y responde 201 con el formato estándar")
     void createsProduct() throws Exception {
+        when(imageStorage.store(any(MultipartFile.class))).thenReturn(STORED_IMAGE);
         when(createProductUseCase.execute(isNull(), eq(1L), anyList(), eq("Notebook"), eq("Equipo portátil"),
-                eq(10), eq(2.5), eq(500.0), eq(700.0), eq("https://images.example.com/products/notebook.png")))
+                eq(10), eq(2.5), eq(500.0), eq(700.0), eq(STORED_IMAGE.toString())))
                 .thenReturn(buildProduct(5L));
 
-        mockMvc.perform(post("/api/v1/products")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(PRODUCT_JSON))
+        mockMvc.perform(validMultipartPost())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.statusCode").value(201))
                 .andExpect(jsonPath("$.message").value("Producto creado correctamente."))
@@ -133,41 +155,70 @@ class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("PUT actualiza un producto existente y responde 200")
-    void updatesProduct() throws Exception {
+    @DisplayName("PUT actualiza un producto manteniendo la imagen existente y responde 200")
+    void updatesProductKeepingImage() throws Exception {
+        when(getProductByIdUseCase.execute(5L)).thenReturn(buildProduct(5L));
         when(createProductUseCase.execute(eq(5L), eq(1L), anyList(), eq("Notebook"), eq("Equipo portátil"),
                 eq(10), eq(2.5), eq(500.0), eq(700.0), eq("https://images.example.com/products/notebook.png")))
                 .thenReturn(buildProduct(5L));
 
-        mockMvc.perform(put("/api/v1/products/5")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(PRODUCT_JSON))
+        mockMvc.perform(multipart(HttpMethod.PUT, "/api/v1/products/5")
+                        .param("markId", "1")
+                        .param("categoryIds", "2", "3")
+                        .param("name", "Notebook")
+                        .param("description", "Equipo portátil")
+                        .param("stock", "10")
+                        .param("weight", "2.5")
+                        .param("priceCost", "500.0")
+                        .param("priceSale", "700.0"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.statusCode").value(200))
                 .andExpect(jsonPath("$.message").value("Producto actualizado correctamente."))
                 .andExpect(jsonPath("$.data.id").value(5));
+
+        verify(imageStorage, never()).store(any(MultipartFile.class));
+    }
+
+    @Test
+    @DisplayName("PUT reemplaza la imagen del producto y responde 200")
+    void updatesProductReplacingImage() throws Exception {
+        when(getProductByIdUseCase.execute(5L)).thenReturn(buildProduct(5L));
+        when(imageStorage.store(any(MultipartFile.class))).thenReturn(STORED_IMAGE);
+        when(createProductUseCase.execute(eq(5L), eq(1L), anyList(), eq("Notebook"), eq("Equipo portátil"),
+                eq(10), eq(2.5), eq(500.0), eq(700.0), eq(STORED_IMAGE.toString())))
+                .thenReturn(buildProduct(5L));
+
+        mockMvc.perform(multipart(HttpMethod.PUT, "/api/v1/products/5")
+                        .file(image("notebook.png"))
+                        .param("markId", "1")
+                        .param("categoryIds", "2", "3")
+                        .param("name", "Notebook")
+                        .param("description", "Equipo portátil")
+                        .param("stock", "10")
+                        .param("weight", "2.5")
+                        .param("priceCost", "500.0")
+                        .param("priceSale", "700.0"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.statusCode").value(200))
+                .andExpect(jsonPath("$.data.id").value(5));
+
+        verify(imageStorage).store(any(MultipartFile.class));
+        verify(imageStorage, never()).delete(any(Path.class));
     }
 
     @Test
     @DisplayName("Responde 400 sin invocar el caso de uso cuando el DTO es inválido")
     void rejectsInvalidPayload() throws Exception {
-        String invalidJson = """
-                {
-                  "markId": 1,
-                  "categoryIds": [],
-                  "name": "",
-                  "description": "Equipo portátil",
-                  "stock": -1,
-                  "weight": 2.5,
-                  "priceCost": 500.0,
-                  "priceSale": 700.0,
-                  "imagePath": "https://images.example.com/products/notebook.png"
-                }
-                """;
-
-        mockMvc.perform(post("/api/v1/products")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(invalidJson))
+        mockMvc.perform(multipart("/api/v1/products")
+                        .file(image("notebook.png"))
+                        .param("markId", "1")
+                        .param("categoryIds")
+                        .param("name", "")
+                        .param("description", "Equipo portátil")
+                        .param("stock", "-1")
+                        .param("weight", "2.5")
+                        .param("priceCost", "500.0")
+                        .param("priceSale", "700.0"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.statusCode").value(400))
                 .andExpect(jsonPath("$.message", containsString("categoryIds")));
@@ -176,20 +227,93 @@ class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("Propaga la marca inexistente como 404 en el formato estándar")
+    @DisplayName("POST crea un producto sin imagen y responde 201 con imagePath nulo")
+    void createsProductWithoutImage() throws Exception {
+        when(createProductUseCase.execute(isNull(), eq(1L), anyList(), eq("Notebook"), eq("Equipo portátil"),
+                eq(10), eq(2.5), eq(500.0), eq(700.0), isNull()))
+                .thenReturn(buildProductWithoutImage(5L));
+
+        mockMvc.perform(multipart("/api/v1/products")
+                        .param("markId", "1")
+                        .param("categoryIds", "2", "3")
+                        .param("name", "Notebook")
+                        .param("description", "Equipo portátil")
+                        .param("stock", "10")
+                        .param("weight", "2.5")
+                        .param("priceCost", "500.0")
+                        .param("priceSale", "700.0"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.statusCode").value(201))
+                .andExpect(jsonPath("$.data.id").value(5))
+                .andExpect(jsonPath("$.data.imagePath").value(nullValue()));
+
+        verify(imageStorage, never()).store(any(MultipartFile.class));
+    }
+
+    @Test
+    @DisplayName("POST tolera image enviado como texto vacío y responde 201 sin imagen")
+    void createsProductWhenImageSentAsBlankText() throws Exception {
+        when(createProductUseCase.execute(isNull(), eq(1L), anyList(), eq("Notebook"), eq("Equipo portátil"),
+                eq(10), eq(2.5), eq(500.0), eq(700.0), isNull()))
+                .thenReturn(buildProductWithoutImage(5L));
+
+        mockMvc.perform(validMultipartPost().param("image", ""))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.statusCode").value(201))
+                .andExpect(jsonPath("$.data.id").value(5))
+                .andExpect(jsonPath("$.data.imagePath").value(nullValue()));
+
+        verify(imageStorage, never()).store(any(MultipartFile.class));
+    }
+
+    @Test
+    @DisplayName("PUT actualiza un producto sin imagen manteniendo la ruta nula")
+    void updatesProductKeepingNullImage() throws Exception {
+        when(getProductByIdUseCase.execute(5L)).thenReturn(buildProductWithoutImage(5L));
+        when(createProductUseCase.execute(eq(5L), eq(1L), anyList(), eq("Notebook"), eq("Equipo portátil"),
+                eq(10), eq(2.5), eq(500.0), eq(700.0), isNull()))
+                .thenReturn(buildProductWithoutImage(5L));
+
+        mockMvc.perform(multipart(HttpMethod.PUT, "/api/v1/products/5")
+                        .param("markId", "1")
+                        .param("categoryIds", "2", "3")
+                        .param("name", "Notebook")
+                        .param("description", "Equipo portátil")
+                        .param("stock", "10")
+                        .param("weight", "2.5")
+                        .param("priceCost", "500.0")
+                        .param("priceSale", "700.0"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.statusCode").value(200))
+                .andExpect(jsonPath("$.data.id").value(5));
+
+        verify(imageStorage, never()).store(any(MultipartFile.class));
+        verify(imageStorage, never()).delete(any(Path.class));
+    }
+
+    @Test
+    @DisplayName("Propaga la marca inexistente como 404 y elimina la imagen almacenada")
     void propagatesMissingMarkAs404() throws Exception {
+        when(imageStorage.store(any(MultipartFile.class))).thenReturn(STORED_IMAGE);
         when(createProductUseCase.execute(isNull(), eq(99L), anyList(), eq("Notebook"), eq("Equipo portátil"),
-                eq(10), eq(2.5), eq(500.0), eq(700.0), eq("https://images.example.com/products/notebook.png")))
+                eq(10), eq(2.5), eq(500.0), eq(700.0), eq(STORED_IMAGE.toString())))
                 .thenThrow(new IllegalArgumentException("La marca no existe."));
 
-        String jsonWithMissingMark = PRODUCT_JSON.replace("\"markId\": 1", "\"markId\": 99");
-
-        mockMvc.perform(post("/api/v1/products")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonWithMissingMark))
+        mockMvc.perform(multipart("/api/v1/products")
+                        .file(image("notebook.png"))
+                        .param("markId", "99")
+                        .param("categoryIds", "2", "3")
+                        .param("name", "Notebook")
+                        .param("description", "Equipo portátil")
+                        .param("stock", "10")
+                        .param("weight", "2.5")
+                        .param("priceCost", "500.0")
+                        .param("priceSale", "700.0"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.statusCode").value(404))
                 .andExpect(jsonPath("$.message").value("La marca no existe."))
                 .andExpect(jsonPath("$.data").doesNotExist());
+
+        verify(imageStorage).delete(eq(STORED_IMAGE));
     }
 }

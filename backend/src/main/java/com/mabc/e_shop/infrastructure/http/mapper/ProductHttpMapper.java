@@ -32,6 +32,6 @@ public final class ProductHttpMapper {
                 product.getWeight().value(),
                 product.getPriceCost().value(),
                 product.getPriceSale().value(),
-                product.getImagePath().value());
+                product.getImagePath() == null ? null : product.getImagePath().value());
     }
 }

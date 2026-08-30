@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 /**
  * Manejador global de excepciones que traduce los errores del dominio y de
@@ -81,6 +82,17 @@ public class GlobalExceptionHandler {
                 .reduce((a, b) -> a + "; " + b)
                 .orElse("Petición inválida.");
         return build(HttpStatus.BAD_REQUEST, detail);
+    }
+
+    /**
+     * Traduce el exceso de tamaño del archivo subido a respuestas HTTP 400.
+     *
+     * @param exception excepción lanzada al superar el límite de subida.
+     * @return la respuesta estándar con el detalle del error.
+     */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMaxUploadSize(MaxUploadSizeExceededException exception) {
+        return build(HttpStatus.BAD_REQUEST, "La imagen supera el tamaño máximo permitido.");
     }
 
     private ResponseEntity<ApiResponse<Void>> build(HttpStatus status, String message) {

@@ -74,7 +74,7 @@ public final class ProductEntityMapper {
         entity.setWeight(product.getWeight().value());
         entity.setPriceCost(product.getPriceCost().value());
         entity.setPriceSale(product.getPriceSale().value());
-        entity.setImagePath(product.getImagePath().value());
+        entity.setImagePath(product.getImagePath() == null ? null : product.getImagePath().value());
 
         entity.setMark(new MarkEntity(
                 product.getMark().getId(),

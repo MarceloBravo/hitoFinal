@@ -7,3 +7,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
+
+app:
+  upload:
+    dir: target/uploads

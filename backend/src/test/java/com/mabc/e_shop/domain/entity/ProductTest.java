@@ -15,6 +15,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -103,6 +104,14 @@ class ProductTest {
     }
 
     @Test
+    @DisplayName("updateImagePath: acepta una ruta nula (producto sin imagen)")
+    void updateImagePathAcceptsNull() {
+        product.updateImagePath(null);
+
+        assertNull(product.getImagePath());
+    }
+
+    @Test
     @DisplayName("Mutadores: rechazan argumentos nulos")
     void mutatorsRejectNullArguments() {
         assertThrows(NullPointerException.class, () -> product.rename(null));
@@ -110,7 +119,6 @@ class ProductTest {
         assertThrows(NullPointerException.class, () -> product.restock(null));
         assertThrows(NullPointerException.class, () -> product.updatePrices(null, new Price(1)));
         assertThrows(NullPointerException.class, () -> product.updatePrices(new Price(1), null));
-        assertThrows(NullPointerException.class, () -> product.updateImagePath(null));
     }
 
     @Test
