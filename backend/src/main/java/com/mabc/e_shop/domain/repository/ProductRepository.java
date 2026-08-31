@@ -51,4 +51,12 @@ public interface ProductRepository {
      * @return {@code true} si el producto existe, {@code false} en caso contrario.
      */
     boolean existsById(Long id);
+
+    /**
+     * Indica si existe al menos un producto asociado a la categoría entregada.
+     *
+     * @param categoryId identificador de la categoría.
+     * @return {@code true} si algún producto referencia la categoría, {@code false} en caso contrario.
+     */
+    boolean existsProductWithCategory(Long categoryId);
 }

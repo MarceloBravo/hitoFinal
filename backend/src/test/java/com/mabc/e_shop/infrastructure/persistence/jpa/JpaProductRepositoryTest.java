@@ -119,4 +119,14 @@ class JpaProductRepositoryTest {
         assertTrue(repository.existsById(1L));
         assertFalse(repository.existsById(2L));
     }
+
+    @Test
+    @DisplayName("existsProductWithCategory: delega el conteo de productos por categoría")
+    void existsProductWithCategoryDelegates() {
+        when(jpaRepository.countProductsByCategoryId(1L)).thenReturn(2L);
+        when(jpaRepository.countProductsByCategoryId(2L)).thenReturn(0L);
+
+        assertTrue(repository.existsProductWithCategory(1L));
+        assertFalse(repository.existsProductWithCategory(2L));
+    }
 }

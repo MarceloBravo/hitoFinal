@@ -4,6 +4,7 @@ import com.mabc.e_shop.application.usecase.AddItemToCartUseCase;
 import com.mabc.e_shop.application.usecase.CreateCartUseCase;
 import com.mabc.e_shop.application.usecase.CreateProductUseCase;
 import com.mabc.e_shop.application.usecase.DeleteCartUseCase;
+import com.mabc.e_shop.application.usecase.DeleteCategoryUseCase;
 import com.mabc.e_shop.application.usecase.DeleteProductUseCase;
 import com.mabc.e_shop.application.usecase.GetAllCategoriesUseCase;
 import com.mabc.e_shop.application.usecase.GetAllMarksUseCase;
@@ -55,6 +56,22 @@ public class ApplicationConfig {
     @Bean
     public SaveCategoryUseCase saveCategoryUseCase(CategoryRepository categoryRepository) {
         return new SaveCategoryUseCase(categoryRepository);
+    }
+
+    /**
+     * Crea el caso de uso que elimina una categoría por su identificador,
+     * rechazándola si está asociada a productos.
+     *
+     * @param categoryRepository repositorio de categorías.
+     * @param productRepository  repositorio de productos.
+     * @return el caso de uso configurado.
+     */
+    @Bean
+    public DeleteCategoryUseCase deleteCategoryUseCase(
+        CategoryRepository categoryRepository,
+        ProductRepository productRepository
+    ) {
+        return new DeleteCategoryUseCase(categoryRepository, productRepository);
     }
 
     /**

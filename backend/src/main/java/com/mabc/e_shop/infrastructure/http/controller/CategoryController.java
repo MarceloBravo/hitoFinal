@@ -1,5 +1,6 @@
 package com.mabc.e_shop.infrastructure.http.controller;
 
+import com.mabc.e_shop.application.usecase.DeleteCategoryUseCase;
 import com.mabc.e_shop.application.usecase.GetAllCategoriesUseCase;
 import com.mabc.e_shop.application.usecase.GetCategoryByIdUseCase;
 import com.mabc.e_shop.application.usecase.SaveCategoryUseCase;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,6 +40,7 @@ public class CategoryController {
     private final SaveCategoryUseCase saveCategoryUseCase;
     private final GetAllCategoriesUseCase getAllCategoriesUseCase;
     private final GetCategoryByIdUseCase getCategoryByIdUseCase;
+    private final DeleteCategoryUseCase deleteCategoryUseCase;
 
     /**
      * Crea el controlador con los casos de uso de categorías.
@@ -45,15 +48,18 @@ public class CategoryController {
      * @param saveCategoryUseCase    caso de uso que registra o actualiza categorías.
      * @param getAllCategoriesUseCase caso de uso que consulta todas las categorías.
      * @param getCategoryByIdUseCase  caso de uso que consulta una categoría por id.
+     * @param deleteCategoryUseCase   caso de uso que elimina una categoría por id.
      */
     public CategoryController(
         SaveCategoryUseCase saveCategoryUseCase,
         GetAllCategoriesUseCase getAllCategoriesUseCase,
-        GetCategoryByIdUseCase getCategoryByIdUseCase
+        GetCategoryByIdUseCase getCategoryByIdUseCase,
+        DeleteCategoryUseCase deleteCategoryUseCase
     ) {
         this.saveCategoryUseCase = saveCategoryUseCase;
         this.getAllCategoriesUseCase = getAllCategoriesUseCase;
         this.getCategoryByIdUseCase = getCategoryByIdUseCase;
+        this.deleteCategoryUseCase = deleteCategoryUseCase;
     }
 
     /**
@@ -145,5 +151,29 @@ public class CategoryController {
         Category category = saveCategoryUseCase.execute(id, request.name(), request.active());
         return ResponseEntity.ok().body(ApiResponseFactory.updated(
                 "Categoría actualizada correctamente.", CategoryHttpMapper.toResponse(category)));
+    }
+
+    /**
+     * Elimina una categoría existente.
+     *
+     * @param id identificador de la categoría a eliminar.
+     * @return la respuesta estándar con estado HTTP 200.
+     */
+    @Operation(summary = "Elimina una categoría existente",
+            description = "Elimina los datos de la categoría correspondiente al id entregado.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "200", description = "Categoría eliminada correctamente."),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "404", description = "Categoría inexistente."),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "409", description = "Categoría en uso por algún producto.")
+    })
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<ApiResponse<CategoryResponseDto>> delete(
+        @PathVariable Long id
+    ) {
+        deleteCategoryUseCase.execute(id);
+        return ResponseEntity.ok().body(ApiResponseFactory.deleted("Categoría eliminada correctamente.", null));
     }
 }

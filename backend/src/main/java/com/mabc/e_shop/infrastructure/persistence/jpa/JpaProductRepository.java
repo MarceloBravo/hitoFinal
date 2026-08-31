@@ -74,4 +74,13 @@ public class JpaProductRepository implements ProductRepository {
     public boolean existsById(Long id) {
         return productJpaRepository.existsById(id);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsProductWithCategory(Long categoryId) {
+        return productJpaRepository.countProductsByCategoryId(categoryId) > 0;
+    }
 }

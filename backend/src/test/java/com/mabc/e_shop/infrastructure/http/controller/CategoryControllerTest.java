@@ -1,5 +1,6 @@
 package com.mabc.e_shop.infrastructure.http.controller;
 
+import com.mabc.e_shop.application.usecase.DeleteCategoryUseCase;
 import com.mabc.e_shop.application.usecase.GetAllCategoriesUseCase;
 import com.mabc.e_shop.application.usecase.GetCategoryByIdUseCase;
 import com.mabc.e_shop.application.usecase.SaveCategoryUseCase;
@@ -17,6 +18,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -37,6 +39,9 @@ class CategoryControllerTest {
 
     @MockitoBean
     private GetCategoryByIdUseCase getCategoryByIdUseCase;
+
+    @MockitoBean
+    private DeleteCategoryUseCase deleteCategoryUseCase;
 
     @Test
     @DisplayName("GET lista todas las categorías y responde 200 con el formato estándar")
@@ -123,5 +128,40 @@ class CategoryControllerTest {
                 .andExpect(jsonPath("$.statusCode").value(404))
                 .andExpect(jsonPath("$.message").value("La categoría no existe."))
                 .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("DELETE elimina una categoría y responde 200 con el formato estándar")
+    void deletesCategory() throws Exception {
+        when(deleteCategoryUseCase.execute(1L)).thenReturn(true);
+
+        mockMvc.perform(delete("/api/v1/categories/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.statusCode").value(200))
+                .andExpect(jsonPath("$.message").value("Categoría eliminada correctamente."));
+    }
+
+    @Test
+    @DisplayName("DELETE de una categoría inexistente responde 404")
+    void rejectsMissingCategoryOnDeleteAs404() throws Exception {
+        when(deleteCategoryUseCase.execute(99L))
+                .thenThrow(new com.mabc.e_shop.domain.exception.ResourceNotFoundException("La categoría no existe."));
+
+        mockMvc.perform(delete("/api/v1/categories/99"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.statusCode").value(404))
+                .andExpect(jsonPath("$.message").value("La categoría no existe."));
+    }
+
+    @Test
+    @DisplayName("DELETE de una categoría en uso responde 409")
+    void rejectsInUseCategoryOnDeleteAs409() throws Exception {
+        when(deleteCategoryUseCase.execute(1L))
+                .thenThrow(new IllegalStateException("La categoría no se puede eliminar porque está asociada a productos."));
+
+        mockMvc.perform(delete("/api/v1/categories/1"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.statusCode").value(409))
+                .andExpect(jsonPath("$.message").value("La categoría no se puede eliminar porque está asociada a productos."));
     }
 }
