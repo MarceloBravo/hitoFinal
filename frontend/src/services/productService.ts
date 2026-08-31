@@ -11,18 +11,35 @@ const URI = '/products';
 export class ProductService {
 
   /**
-   * Obtiene una lista paginada de productos.
+   * Obtiene una lista paginada de productos, opcionalmente filtrada por
+   * categoría, marca y rango de precio de venta.
    *
-   * @param limit Cantidad máxima de productos a solicitar.
-   * @param page  Número de página a solicitar (1-indexado).
+   * @param limit      Cantidad máxima de productos a solicitar.
+   * @param page       Número de página a solicitar (1-indexado).
+   * @param categoryId Identificador de la categoría para filtrar (opcional).
+   * @param markId     Identificador de la marca para filtrar (opcional).
+   * @param minPrice   Precio de venta mínimo para filtrar (opcional).
+   * @param maxPrice   Precio de venta máximo para filtrar (opcional).
    * @returns Respuesta normalizada con los productos o el error ocurrido.
    */
-  static getAll = async (limit?: number, page?: number): Promise<ResponseInterface<ProductResponseApi>> => {
+  static getAll = async (
+    limit?: number,
+    page?: number,
+    categoryId?: number,
+    markId?: number,
+    minPrice?: number,
+    maxPrice?: number
+  ): Promise<ResponseInterface<ProductResponseApi>> => {
     try {
-      let strURI: string = URI;
-      if(limit && page){
-        strURI +=  `?limit=${limit}&page=${page}`;
-      }
+      const params = new URLSearchParams();
+      if (limit) params.set('limit', String(limit));
+      if (page) params.set('page', String(page));
+      if (categoryId !== undefined && categoryId !== null) params.set('categoryId', String(categoryId));
+      if (markId !== undefined && markId !== null) params.set('markId', String(markId));
+      if (minPrice !== undefined && minPrice !== null) params.set('minPrice', String(minPrice));
+      if (maxPrice !== undefined && maxPrice !== null) params.set('maxPrice', String(maxPrice));
+      const queryString: string = params.toString();
+      const strURI: string = queryString ? `${URI}?${queryString}` : URI;
       return await apiClient<ProductResponseApi>(strURI);
     } catch (error) {
       return handleError<ProductResponseApi>(error, 'No se pudieron cargar los productos');

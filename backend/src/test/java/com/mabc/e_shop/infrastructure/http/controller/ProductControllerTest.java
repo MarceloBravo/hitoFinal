@@ -106,7 +106,7 @@ class ProductControllerTest {
     @Test
     @DisplayName("GET lista productos paginados y responde 200 con el formato esperado")
     void findsAllProducts() throws Exception {
-        when(getAllProductsUseCase.execute(0, 10, null, null)).thenReturn(
+        when(getAllProductsUseCase.execute(0, 10, null, null, null, null)).thenReturn(
                 new ProductRepository.PageResult(List.of(buildProduct(5L)), 1));
 
         mockMvc.perform(get("/api/v1/products"))
@@ -118,13 +118,13 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.products[0].id").value(5))
                 .andExpect(jsonPath("$.products[0].name").value("Notebook"));
 
-        verify(getAllProductsUseCase).execute(0, 10, null, null);
+        verify(getAllProductsUseCase).execute(0, 10, null, null, null, null);
     }
 
     @Test
     @DisplayName("GET convierte page 1-indexado a base 0 y calcula skip")
     void findsAllProductsWithPaginationParams() throws Exception {
-        when(getAllProductsUseCase.execute(2, 10, null, null)).thenReturn(
+        when(getAllProductsUseCase.execute(2, 10, null, null, null, null)).thenReturn(
                 new ProductRepository.PageResult(List.of(buildProduct(25L)), 50));
 
         mockMvc.perform(get("/api/v1/products?limit=10&page=3"))
@@ -134,13 +134,13 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.total").value(50))
                 .andExpect(jsonPath("$.products[0].id").value(25));
 
-        verify(getAllProductsUseCase).execute(2, 10, null, null);
+        verify(getAllProductsUseCase).execute(2, 10, null, null, null, null);
     }
 
     @Test
     @DisplayName("GET filtra productos por categoryId y responde 200")
     void findsAllProductsFilteredByCategory() throws Exception {
-        when(getAllProductsUseCase.execute(0, 10, 7L, null)).thenReturn(
+        when(getAllProductsUseCase.execute(0, 10, 7L, null, null, null)).thenReturn(
                 new ProductRepository.PageResult(List.of(buildProduct(5L)), 1));
 
         mockMvc.perform(get("/api/v1/products?categoryId=7"))
@@ -151,13 +151,13 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.products.length()").value(1))
                 .andExpect(jsonPath("$.products[0].id").value(5));
 
-        verify(getAllProductsUseCase).execute(0, 10, 7L, null);
+        verify(getAllProductsUseCase).execute(0, 10, 7L, null, null, null);
     }
 
     @Test
     @DisplayName("GET filtra productos por markId y responde 200")
     void findsAllProductsFilteredByMark() throws Exception {
-        when(getAllProductsUseCase.execute(0, 10, null, 3L)).thenReturn(
+        when(getAllProductsUseCase.execute(0, 10, null, 3L, null, null)).thenReturn(
                 new ProductRepository.PageResult(List.of(buildProduct(5L)), 1));
 
         mockMvc.perform(get("/api/v1/products?markId=3"))
@@ -168,13 +168,13 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.products.length()").value(1))
                 .andExpect(jsonPath("$.products[0].id").value(5));
 
-        verify(getAllProductsUseCase).execute(0, 10, null, 3L);
+        verify(getAllProductsUseCase).execute(0, 10, null, 3L, null, null);
     }
 
     @Test
     @DisplayName("GET combina filtros de categoría y marca y responde 200")
     void findsAllProductsFilteredByCategoryAndMark() throws Exception {
-        when(getAllProductsUseCase.execute(0, 10, 7L, 3L)).thenReturn(
+        when(getAllProductsUseCase.execute(0, 10, 7L, 3L, null, null)).thenReturn(
                 new ProductRepository.PageResult(List.of(buildProduct(5L)), 1));
 
         mockMvc.perform(get("/api/v1/products?categoryId=7&markId=3"))
@@ -185,7 +185,24 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.products.length()").value(1))
                 .andExpect(jsonPath("$.products[0].id").value(5));
 
-        verify(getAllProductsUseCase).execute(0, 10, 7L, 3L);
+        verify(getAllProductsUseCase).execute(0, 10, 7L, 3L, null, null);
+    }
+
+    @Test
+    @DisplayName("GET filtra productos por rango de precio y responde 200")
+    void findsAllProductsFilteredByPriceRange() throws Exception {
+        when(getAllProductsUseCase.execute(0, 10, null, null, 500.0, 1500.0)).thenReturn(
+                new ProductRepository.PageResult(List.of(buildProduct(5L)), 1));
+
+        mockMvc.perform(get("/api/v1/products?minPrice=500&maxPrice=1500"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.limit").value(10))
+                .andExpect(jsonPath("$.skip").value(0))
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.products.length()").value(1))
+                .andExpect(jsonPath("$.products[0].id").value(5));
+
+        verify(getAllProductsUseCase).execute(0, 10, null, null, 500.0, 1500.0);
     }
 
     @Test

@@ -49,29 +49,39 @@ class GetAllProductsUseCaseTest {
     @DisplayName("Retorna el resultado paginado filtrado por categoría delegando en el repositorio")
     void returnsPaginatedProductsFilteredByCategory() {
         PageResult pageResult = new PageResult(List.of(), 12);
-        when(productRepository.findAll(0, 5, 9L, null)).thenReturn(pageResult);
+        when(productRepository.findAll(0, 5, 9L, null, null, null)).thenReturn(pageResult);
 
-        assertEquals(pageResult, useCase.execute(0, 5, 9L, null));
-        verify(productRepository).findAll(0, 5, 9L, null);
+        assertEquals(pageResult, useCase.execute(0, 5, 9L, null, null, null));
+        verify(productRepository).findAll(0, 5, 9L, null, null, null);
     }
 
     @Test
     @DisplayName("Retorna el resultado paginado filtrado por marca delegando en el repositorio")
     void returnsPaginatedProductsFilteredByMark() {
         PageResult pageResult = new PageResult(List.of(), 8);
-        when(productRepository.findAll(0, 5, null, 3L)).thenReturn(pageResult);
+        when(productRepository.findAll(0, 5, null, 3L, null, null)).thenReturn(pageResult);
 
-        assertEquals(pageResult, useCase.execute(0, 5, null, 3L));
-        verify(productRepository).findAll(0, 5, null, 3L);
+        assertEquals(pageResult, useCase.execute(0, 5, null, 3L, null, null));
+        verify(productRepository).findAll(0, 5, null, 3L, null, null);
     }
 
     @Test
     @DisplayName("Retorna el resultado paginado filtrado por categoría y marca delegando en el repositorio")
     void returnsPaginatedProductsFilteredByCategoryAndMark() {
         PageResult pageResult = new PageResult(List.of(), 4);
-        when(productRepository.findAll(0, 5, 9L, 3L)).thenReturn(pageResult);
+        when(productRepository.findAll(0, 5, 9L, 3L, null, null)).thenReturn(pageResult);
 
-        assertEquals(pageResult, useCase.execute(0, 5, 9L, 3L));
-        verify(productRepository).findAll(0, 5, 9L, 3L);
+        assertEquals(pageResult, useCase.execute(0, 5, 9L, 3L, null, null));
+        verify(productRepository).findAll(0, 5, 9L, 3L, null, null);
+    }
+
+    @Test
+    @DisplayName("Retorna el resultado paginado filtrado por rango de precio delegando en el repositorio")
+    void returnsPaginatedProductsFilteredByPriceRange() {
+        PageResult pageResult = new PageResult(List.of(), 6);
+        when(productRepository.findAll(0, 5, null, null, 100.0, 900.0)).thenReturn(pageResult);
+
+        assertEquals(pageResult, useCase.execute(0, 5, null, null, 100.0, 900.0));
+        verify(productRepository).findAll(0, 5, null, null, 100.0, 900.0);
     }
 }

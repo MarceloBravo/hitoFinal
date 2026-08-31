@@ -71,18 +71,9 @@ public class JpaProductRepository implements ProductRepository {
      */
     @Override
     @Transactional(readOnly = true)
-    public PageResult findAll(int page, int size, Long categoryId, Long markId) {
+    public PageResult findAll(int page, int size, Long categoryId, Long markId, Double minPrice, Double maxPrice) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<ProductEntity> pageResult;
-        if (categoryId != null && markId != null) {
-            pageResult = productJpaRepository.findAllByCategoryIdAndMarkId(categoryId, markId, pageable);
-        } else if (categoryId != null) {
-            pageResult = productJpaRepository.findAllByCategoryId(categoryId, pageable);
-        } else if (markId != null) {
-            pageResult = productJpaRepository.findAllByMarkId(markId, pageable);
-        } else {
-            pageResult = productJpaRepository.findAll(pageable);
-        }
+        Page<ProductEntity> pageResult = productJpaRepository.findFiltered(categoryId, markId, minPrice, maxPrice, pageable);
         List<Product> content = pageResult.getContent().stream()
                 .map(ProductEntityMapper::toDomain)
                 .toList();

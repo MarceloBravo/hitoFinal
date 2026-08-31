@@ -15,6 +15,7 @@ export class Template{
     private title: string = 'Tienda on-line';
     private optionsCategories: string;
     private optionsMarks: string;
+    private optionsPrices: string;
     private productsData: ProductResponseApi | string;
     private activaPage: number = 1;
     private loadStatus: LoadStatus;
@@ -23,16 +24,18 @@ export class Template{
      * @param root              Elemento anfitrión donde se renderiza la plantilla.
      * @param title             Título de la página.
      * @param optionsCategories Opciones de categorías (JSON) para los filtros.
+     * @param optionsMarks      Opciones de marcas (JSON) para los filtros.
+     * @param optionsPrices     Opciones de precios (JSON) para los filtros.
      * @param productsData      Datos de productos o mensaje de error.
      * @param activaPage        Página activa actual.
      * @param loadStatus        Estado de carga de la interfaz.
-     * @param optionsMarks      Opciones de marcas (JSON) para los filtros.
      */
-    constructor(root: HTMLElement, title: string, optionsCategories: string, productsData: ProductResponseApi | string, activaPage: number, loadStatus: LoadStatus, optionsMarks: string){
+    constructor(root: HTMLElement, title: string, optionsCategories: string, optionsMarks: string, optionsPrices: string, productsData: ProductResponseApi | string, activaPage: number, loadStatus: LoadStatus){
         this.root = root;
         this.title = title;
         this.optionsCategories = optionsCategories;
         this.optionsMarks = optionsMarks;
+        this.optionsPrices = optionsPrices;
         this.productsData = productsData;
         this.activaPage = activaPage;
         this.loadStatus = loadStatus;
@@ -107,20 +110,20 @@ export class Template{
                         <h2>Filtros</h2>
                         <aside-section 
                             title="Categorias"
-                            type="checkbox" 
+                            type="radio" 
                             options='[${this.optionsCategories}]'>
                         </aside-section>
 
                         <aside-section 
                             title="marcas"
-                            type="checkbox" 
+                            type="radio" 
                             options='[${this.optionsMarks}]'>
                         </aside-section>
 
                         <aside-section 
                             title="precios"
                             type="radio" 
-                            options='[{"label":"Menor a $50.000","type":"radio","checked":true},{"label":"$50.000 - $100.000","type":"radio"},{"label":"Más de $100.000","type":"radio"}]'>
+                            options='[${this.optionsPrices}]'>
                         </aside-section>
                     </aside>
                     

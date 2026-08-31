@@ -62,6 +62,43 @@ export class AsideSection extends HTMLElement {
         const title: string = this.getAttribute('title') || 'Sección';
         const render = new Render(root, title, type, options);
         render.render();
+        this.attachListeners(root, title, options);
+    }
+
+    /**
+     * Escucha los cambios de selección dentro del shadow DOM y despacha un
+     * evento `filter-change` (bubbles + composed) con los datos del filtro
+     * seleccionado para que la página pueda reaccionar.
+     *
+     * @param root    shadow root del componente.
+     * @param title   título de la sección (actúa como grupo de filtro).
+     * @param options opciones del filtro para resolver id y rangos de precio.
+     */
+    private attachListeners(root: ShadowRoot, title: string, options: AsideOptions[]) {
+        const inputs = Array.from(root.querySelectorAll<HTMLInputElement>('input'));
+        inputs.forEach((input) => {
+            input.addEventListener('change', () => {
+                if (!input.checked) {
+                    return;
+                }
+                const id = input.dataset.id !== undefined ? Number(input.dataset.id) : undefined;
+                const value = input.dataset.value;
+                const option = options.find((opt) =>
+                    (id !== undefined && opt.id === id) || (value !== undefined && opt.value === value));
+                const event = new CustomEvent('filter-change', {
+                    detail: {
+                        group: title,
+                        id,
+                        value,
+                        priceMin: option?.priceMin,
+                        priceMax: option?.priceMax
+                    },
+                    bubbles: true,
+                    composed: true
+                });
+                this.dispatchEvent(event);
+            });
+        });
     }
 }
 

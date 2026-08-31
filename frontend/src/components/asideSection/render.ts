@@ -37,11 +37,13 @@ export class Render {
             <section>
                 <h3>${this.title}</h3>
                 <div class="aside-options">
-                ${this.options.map(({ label, checked }) => `
+                ${this.options.map(({ label, checked, id, value }) => `
                     <label>
                         <input 
                             name="${this.type === InputTypeEnum.CHECKBOX ? label : this.title}"
-                            type="${this.type}" ${checked ? 'checked' : ''} /> 
+                            type="${this.type}" ${checked ? 'checked' : ''}
+                            ${id !== undefined ? `data-id="${id}"` : ''}
+                            ${value !== undefined ? `data-value="${value}"` : ''} /> 
                             ${label}
                         </label>`).join('')}
                 </div>

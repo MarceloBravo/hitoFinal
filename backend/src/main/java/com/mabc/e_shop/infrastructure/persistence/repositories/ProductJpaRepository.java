@@ -24,35 +24,28 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long>
     long countProductsByCategoryId(@Param("categoryId") Long categoryId);
 
     /**
-     * Obtiene una página de productos pertenecientes a la categoría entregada.
+     * Obtiene una página de productos aplicando los filtros opcionales de
+     * categoría, marca y rango de precio de venta. Los parámetros {@code null}
+     * se ignoran, permitiendo combinar cualquier subconjunto de filtros.
      *
-     * @param categoryId identificador de la categoría.
+     * @param categoryId identificador de la categoría, o {@code null}.
+     * @param markId     identificador de la marca, o {@code null}.
+     * @param minPrice   precio de venta mínimo, o {@code null}.
+     * @param maxPrice   precio de venta máximo, o {@code null}.
      * @param pageable   información de paginación.
-     * @return página de productos de la categoría.
+     * @return página de productos que cumplen los filtros entregados.
      */
-    @Query("select distinct p from ProductEntity p join p.categories c where c.id = :categoryId")
-    Page<ProductEntity> findAllByCategoryId(@Param("categoryId") Long categoryId, Pageable pageable);
-
-    /**
-     * Obtiene una página de productos de la marca entregada.
-     *
-     * @param markId   identificador de la marca.
-     * @param pageable información de paginación.
-     * @return página de productos de la marca.
-     */
-    @Query("select p from ProductEntity p where p.mark.id = :markId")
-    Page<ProductEntity> findAllByMarkId(@Param("markId") Long markId, Pageable pageable);
-
-    /**
-     * Obtiene una página de productos de la categoría y la marca entregadas.
-     *
-     * @param categoryId identificador de la categoría.
-     * @param markId     identificador de la marca.
-     * @param pageable   información de paginación.
-     * @return página de productos que pertenecen a la categoría y a la marca.
-     */
-    @Query("select distinct p from ProductEntity p join p.categories c where c.id = :categoryId and p.mark.id = :markId")
-    Page<ProductEntity> findAllByCategoryIdAndMarkId(@Param("categoryId") Long categoryId,
-                                                     @Param("markId") Long markId,
-                                                     Pageable pageable);
+    @Query("""
+            select distinct p from ProductEntity p
+            left join p.categories c
+            where (:categoryId is null or c.id = :categoryId)
+              and (:markId is null or p.mark.id = :markId)
+              and (:minPrice is null or p.priceSale >= :minPrice)
+              and (:maxPrice is null or p.priceSale <= :maxPrice)
+            """)
+    Page<ProductEntity> findFiltered(@Param("categoryId") Long categoryId,
+                                     @Param("markId") Long markId,
+                                     @Param("minPrice") Double minPrice,
+                                     @Param("maxPrice") Double maxPrice,
+                                     Pageable pageable);
 }
