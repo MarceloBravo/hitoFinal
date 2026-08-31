@@ -8,6 +8,8 @@ import type { MarksResponseApi } from '../../interfaces/marksResponseApi';
 import { Template } from './template';
 import { LoadStatus } from '../../enum/loadStatusEnum';
 
+const LIMIT = import.meta.env.VITE_PRODUCTS_PER_PAGE;
+
 
 /**
  * Web Component de la página de inicio (catálogo de productos).
@@ -37,7 +39,7 @@ export class HomePage extends HTMLElement {
      * @param page  Página a solicitar (1-indexado).
      * @returns Opciones de categorías y marcas (JSON) y datos de productos o error.
      */
-    loadData = async (limit: number = 10, page: number = 1) => {
+    loadData = async (limit: number = 12, page: number = 1) => {
         const products: ResponseInterface<ProductResponseApi> = await ProductService.getAll(limit, page);
         const categories: ResponseInterface<CategoriesResponseApi> = await categoriesService.getAll();
         const marks: ResponseInterface<MarksResponseApi> = await marksService.getAll();
@@ -86,7 +88,7 @@ export class HomePage extends HTMLElement {
         const spinner = document.createElement('spinner-component');
         this.appendChild(spinner);
 
-        const { optionsCategories, optionsMarks, productsData } = await this.loadData(10, page);
+        const { optionsCategories, optionsMarks, productsData } = await this.loadData(LIMIT, page);
         const loadStatus = typeof productsData === 'string' ? LoadStatus.ERROR : LoadStatus.SUCCESS;
 
         const template = new Template(this, title, optionsCategories, productsData, page, loadStatus, optionsMarks);

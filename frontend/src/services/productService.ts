@@ -21,8 +21,7 @@ export class ProductService {
     try {
       let strURI: string = URI;
       if(limit && page){
-        const skip: number = (page - 1) * limit;
-        strURI +=  `?limit=${limit}&skip=${skip}`;
+        strURI +=  `?limit=${limit}&page=${page}`;
       }
       return await apiClient<ProductResponseApi>(strURI);
     } catch (error) {

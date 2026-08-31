@@ -83,7 +83,7 @@ export class Template{
         }
         const total: number = this.productsData.total;
         const limit: number = this.productsData.limit;
-        return total > 0 && limit > 0 ? Math.round(total / limit) : 1;
+        return total > 0 && limit > 0 ? Math.ceil(total / limit) : 1;
     }
 
     /**
