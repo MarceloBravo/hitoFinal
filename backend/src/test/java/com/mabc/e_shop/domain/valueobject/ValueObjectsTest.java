@@ -72,6 +72,7 @@ class ValueObjectsTest {
         assertEquals("https://images.example.com/products/notebook.png",
                 new ImagePath("https://images.example.com/products/notebook.png").value());
         assertEquals("file:///uploads/foto.png", new ImagePath("file:///uploads/foto.png").value());
+        assertEquals("/uploads/foto.png", new ImagePath("/uploads/foto.png").value());
     }
 
     @Test

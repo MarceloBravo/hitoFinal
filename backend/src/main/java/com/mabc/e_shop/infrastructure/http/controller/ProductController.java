@@ -5,7 +5,9 @@ import com.mabc.e_shop.application.usecase.GetAllProductsUseCase;
 import com.mabc.e_shop.application.usecase.GetProductByIdUseCase;
 import com.mabc.e_shop.application.usecase.DeleteProductUseCase;
 import com.mabc.e_shop.domain.entity.Product;
+import com.mabc.e_shop.domain.repository.ProductRepository;
 import com.mabc.e_shop.domain.valueobject.ImagePath;
+import com.mabc.e_shop.infrastructure.http.dto.ProductPaginatedResponseDto;
 import com.mabc.e_shop.infrastructure.http.dto.ProductRequestDto;
 import com.mabc.e_shop.infrastructure.http.dto.ProductResponseDto;
 import com.mabc.e_shop.infrastructure.http.mapper.ProductHttpMapper;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,7 +43,7 @@ import java.util.List;
  * <p>Expone los endpoints de consulta, creación y actualización de productos
  * delegando la lógica en los casos de uso de la capa de aplicación. La
  * creación y actualización reciben multipart/form-data, almacenan la imagen
- * con {@link ImageStorage} y persisten su ruta absoluta en el producto.
+ * con {@link ImageStorage} y persisten su ruta pública {@code /uploads/...}.
  */
 @Tag(name = "Productos", description = "Consulta, registro y actualización de productos.")
 @RestController
@@ -95,12 +98,19 @@ public class ProductController {
     }
 
     /**
-     * Obtiene todos los productos registrados.
+     * Obtiene una página de productos.
      *
-     * @return la respuesta estándar con la lista de productos y estado HTTP 200.
+     * <p>La paginación usa convención del frontend: {@code page} es
+     * 1-indexado y {@code limit} es la cantidad por página. Internamente se
+     * convierte {@code page} a base 0 para Spring Data y se calcula
+     * {@code skip} como {@code (page - 1) * limit}.
+     *
+     * @param limit cantidad máxima de productos por página.
+     * @param page  número de página (1-indexado).
+     * @return la respuesta paginada de productos y estado HTTP 200.
      */
-    @Operation(summary = "Lista todos los productos",
-            description = "Retorna el catálogo completo de productos registrados.")
+    @Operation(summary = "Lista los productos de forma paginada",
+            description = "Retorna una página de productos con metadatos de paginación (limit, skip, total).")
     @ApiResponses(value = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "200", description = "Consulta exitosa."),
@@ -108,11 +118,18 @@ public class ProductController {
                 responseCode = "500", description = "Error interno del servidor.")
     })
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ProductResponseDto>>> findAll() {
-        List<ProductResponseDto> products = getAllProductsUseCase.execute().stream()
+    public ResponseEntity<ProductPaginatedResponseDto> findAll(
+        @RequestParam(defaultValue = "10") int limit,
+        @RequestParam(defaultValue = "1") int page
+    ) {
+        int safeLimit = Math.max(1, Math.min(limit, 100));
+        int safePage = Math.max(1, page);
+        int skip = (safePage - 1) * safeLimit;
+        ProductRepository.PageResult result = getAllProductsUseCase.execute(safePage - 1, safeLimit);
+        List<ProductResponseDto> products = result.content().stream()
                 .map(ProductHttpMapper::toResponse)
                 .toList();
-        return ResponseEntity.ok().body(ApiResponseFactory.queried(products));
+        return ResponseEntity.ok(new ProductPaginatedResponseDto(safeLimit, skip, (int) result.total(), products));
     }
 
     /**
@@ -169,7 +186,7 @@ public class ProductController {
                     request.weight(),
                     request.priceCost(),
                     request.priceSale(),
-                    stored == null ? null : stored.toString()
+                    stored == null ? null : imageStorage.toPublicPath(stored)
                     );
             return ResponseEntity.status(201).body(ApiResponseFactory.created(
                     "Producto creado correctamente.", ProductHttpMapper.toResponse(product)));
@@ -214,7 +231,7 @@ public class ProductController {
         try {
             String imagePath;
             if (replacing) {
-                imagePath = stored.toString();
+                imagePath = imageStorage.toPublicPath(stored);
             } else if (currentImage != null) {
                 imagePath = currentImage.value();
             } else {
@@ -233,7 +250,7 @@ public class ProductController {
                     imagePath
                     );
             if (replacing) {
-                Path previous = pathOf(currentImage == null ? null : currentImage.value());
+                Path previous = imageStorage.toPhysicalPath(currentImage == null ? null : currentImage.value());
                 if (previous != null) {
                     imageStorage.delete(previous);
                 }
@@ -245,19 +262,6 @@ public class ProductController {
                 imageStorage.delete(stored);
             }
             throw e;
-        }
-    }
-
-    private Path pathOf(String imagePath) {
-        if (imagePath == null
-                || imagePath.startsWith("http://")
-                || imagePath.startsWith("https://")) {
-            return null;
-        }
-        try {
-            return Path.of(imagePath);
-        } catch (RuntimeException e) {
-            return null;
         }
     }
 

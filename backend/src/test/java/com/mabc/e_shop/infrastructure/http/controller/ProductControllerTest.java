@@ -7,6 +7,7 @@ import com.mabc.e_shop.application.usecase.GetProductByIdUseCase;
 import com.mabc.e_shop.domain.entity.Category;
 import com.mabc.e_shop.domain.entity.Mark;
 import com.mabc.e_shop.domain.entity.Product;
+import com.mabc.e_shop.domain.repository.ProductRepository;
 import com.mabc.e_shop.domain.valueobject.Description;
 import com.mabc.e_shop.domain.valueobject.ImagePath;
 import com.mabc.e_shop.domain.valueobject.Name;
@@ -103,16 +104,35 @@ class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("GET lista todos los productos y responde 200 con el formato estándar")
+    @DisplayName("GET lista productos paginados y responde 200 con el formato esperado")
     void findsAllProducts() throws Exception {
-        when(getAllProductsUseCase.execute()).thenReturn(List.of(buildProduct(5L)));
+        when(getAllProductsUseCase.execute(0, 10)).thenReturn(
+                new ProductRepository.PageResult(List.of(buildProduct(5L)), 1));
 
         mockMvc.perform(get("/api/v1/products"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.statusCode").value(200))
-                .andExpect(jsonPath("$.data.length()").value(1))
-                .andExpect(jsonPath("$.data[0].id").value(5))
-                .andExpect(jsonPath("$.data[0].name").value("Notebook"));
+                .andExpect(jsonPath("$.limit").value(10))
+                .andExpect(jsonPath("$.skip").value(0))
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.products.length()").value(1))
+                .andExpect(jsonPath("$.products[0].id").value(5))
+                .andExpect(jsonPath("$.products[0].name").value("Notebook"));
+    }
+
+    @Test
+    @DisplayName("GET convierte page 1-indexado a base 0 y calcula skip")
+    void findsAllProductsWithPaginationParams() throws Exception {
+        when(getAllProductsUseCase.execute(2, 10)).thenReturn(
+                new ProductRepository.PageResult(List.of(buildProduct(25L)), 50));
+
+        mockMvc.perform(get("/api/v1/products?limit=10&page=3"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.limit").value(10))
+                .andExpect(jsonPath("$.skip").value(20))
+                .andExpect(jsonPath("$.total").value(50))
+                .andExpect(jsonPath("$.products[0].id").value(25));
+
+        verify(getAllProductsUseCase).execute(2, 10);
     }
 
     @Test
@@ -143,8 +163,9 @@ class ProductControllerTest {
     @DisplayName("POST crea un producto y responde 201 con el formato estándar")
     void createsProduct() throws Exception {
         when(imageStorage.store(any(MultipartFile.class))).thenReturn(STORED_IMAGE);
+        when(imageStorage.toPublicPath(STORED_IMAGE)).thenReturn("/uploads/uuid.png");
         when(createProductUseCase.execute(isNull(), eq(1L), anyList(), eq("Notebook"), eq("Equipo portátil"),
-                eq(10), eq(2.5), eq(500.0), eq(700.0), eq(STORED_IMAGE.toString())))
+                eq(10), eq(2.5), eq(500.0), eq(700.0), eq("/uploads/uuid.png")))
                 .thenReturn(buildProduct(5L));
 
         mockMvc.perform(validMultipartPost())
@@ -189,8 +210,9 @@ class ProductControllerTest {
     void updatesProductReplacingImage() throws Exception {
         when(getProductByIdUseCase.execute(5L)).thenReturn(buildProduct(5L));
         when(imageStorage.store(any(MultipartFile.class))).thenReturn(STORED_IMAGE);
+        when(imageStorage.toPublicPath(STORED_IMAGE)).thenReturn("/uploads/uuid.png");
         when(createProductUseCase.execute(eq(5L), eq(1L), anyList(), eq("Notebook"), eq("Equipo portátil"),
-                eq(10), eq(2.5), eq(500.0), eq(700.0), eq(STORED_IMAGE.toString())))
+                eq(10), eq(2.5), eq(500.0), eq(700.0), eq("/uploads/uuid.png")))
                 .thenReturn(buildProduct(5L));
 
         mockMvc.perform(multipart(HttpMethod.PUT, "/api/v1/products/5")
@@ -300,8 +322,9 @@ class ProductControllerTest {
     @DisplayName("Propaga la marca inexistente como 404 y elimina la imagen almacenada")
     void propagatesMissingMarkAs404() throws Exception {
         when(imageStorage.store(any(MultipartFile.class))).thenReturn(STORED_IMAGE);
+        when(imageStorage.toPublicPath(STORED_IMAGE)).thenReturn("/uploads/uuid.png");
         when(createProductUseCase.execute(isNull(), eq(99L), anyList(), eq("Notebook"), eq("Equipo portátil"),
-                eq(10), eq(2.5), eq(500.0), eq(700.0), eq(STORED_IMAGE.toString())))
+                eq(10), eq(2.5), eq(500.0), eq(700.0), eq("/uploads/uuid.png")))
                 .thenThrow(new IllegalArgumentException("La marca no existe."));
 
         mockMvc.perform(multipart("/api/v1/products")

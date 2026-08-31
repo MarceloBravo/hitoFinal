@@ -2,6 +2,7 @@ package com.mabc.e_shop.application.usecase;
 
 import com.mabc.e_shop.domain.entity.Product;
 import com.mabc.e_shop.domain.repository.ProductRepository;
+import com.mabc.e_shop.domain.repository.ProductRepository.PageResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,5 +33,15 @@ class GetAllProductsUseCaseTest {
 
         assertEquals(products, useCase.execute());
         verify(productRepository).findAll();
+    }
+
+    @Test
+    @DisplayName("Retorna el resultado paginado delegando en el repositorio")
+    void returnsPaginatedProducts() {
+        PageResult pageResult = new PageResult(List.of(), 50);
+        when(productRepository.findAll(2, 10)).thenReturn(pageResult);
+
+        assertEquals(pageResult, useCase.execute(2, 10));
+        verify(productRepository).findAll(2, 10);
     }
 }

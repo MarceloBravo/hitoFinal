@@ -9,10 +9,10 @@ import type { reviews } from "../interfaces/reviews";
  */
 export class Product {
   "id": number;
-  "title": string;
+  "name": string;
   "description": string;
   "category": string;
-  "price": number;
+  "priceSale": number;
   "discountPercentage": number;
   "rating": number;
   "stock": number;
@@ -28,6 +28,6 @@ export class Product {
   "returnPolicy": string;
   "minimumOrderQuantity": number;
   "meta": MedaData;
-  "thumbnail": string;
+  "imagePath": string;
   "images": string[];
 }

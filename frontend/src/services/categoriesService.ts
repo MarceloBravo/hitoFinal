@@ -4,7 +4,7 @@ import type { ResponseInterface } from '../interfaces/responseInterface.js';
 import { handleError } from '../utils/errorHandler.js';
 
 //const URI = '/products/categories';
-const URI = '/api/v1/categories';
+const URI = '/categories';
 
 /**
  * Servicio encargado de consumir los endpoints de categorías de la API.
@@ -15,11 +15,11 @@ export class categoriesService {
      *
      * @returns Respuesta normalizada con las categorías o el error ocurrido.
      */
-    static getAll = async (): Promise<ResponseInterface<CategoriesResponseApi['data']>> => {
+    static getAll = async (): Promise<ResponseInterface<CategoriesResponseApi>> => {
         try{
-            return await apiClient<CategoriesResponseApi['data']>(URI);
+            return await apiClient<CategoriesResponseApi>(URI);
         } catch (error) {
-           return handleError<CategoriesResponseApi['data']>(error, 'No se pudieron cargar las categorías');
+           return handleError<CategoriesResponseApi>(error, 'No se pudieron cargar las categorías');
         }
     }
 }

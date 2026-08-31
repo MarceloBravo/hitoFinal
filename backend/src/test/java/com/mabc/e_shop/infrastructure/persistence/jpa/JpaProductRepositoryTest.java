@@ -3,6 +3,7 @@ package com.mabc.e_shop.infrastructure.persistence.jpa;
 import com.mabc.e_shop.domain.entity.Category;
 import com.mabc.e_shop.domain.entity.Mark;
 import com.mabc.e_shop.domain.entity.Product;
+import com.mabc.e_shop.domain.repository.ProductRepository;
 import com.mabc.e_shop.domain.valueobject.Description;
 import com.mabc.e_shop.domain.valueobject.ImagePath;
 import com.mabc.e_shop.domain.valueobject.Name;
@@ -15,6 +16,9 @@ import com.mabc.e_shop.infrastructure.persistence.entity.ProductEntity;
 import com.mabc.e_shop.infrastructure.persistence.repositories.ProductJpaRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -87,6 +91,20 @@ class JpaProductRepositoryTest {
 
         assertEquals(1, all.size());
         assertEquals("Notebook Lenovo", all.get(0).getName().value());
+    }
+
+    @Test
+    @DisplayName("findAll(page,size): delega la paginacion y devuelve contenido y total")
+    void findAllPaginatedMapsToDomain() {
+        when(jpaRepository.findAll(PageRequest.of(2, 10)))
+                .thenReturn(new PageImpl<>(List.of(productEntity()), PageRequest.of(2, 10), 50));
+
+        ProductRepository.PageResult result = repository.findAll(2, 10);
+
+        assertEquals(1, result.content().size());
+        assertEquals("Notebook Lenovo", result.content().get(0).getName().value());
+        assertEquals(50, result.total());
+        verify(jpaRepository).findAll((Pageable) PageRequest.of(2, 10));
     }
 
     @Test

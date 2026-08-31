@@ -4,6 +4,9 @@ import com.mabc.e_shop.domain.entity.Product;
 import com.mabc.e_shop.domain.repository.ProductRepository;
 import com.mabc.e_shop.infrastructure.persistence.entity.ProductEntity;
 import com.mabc.e_shop.infrastructure.persistence.repositories.ProductJpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +50,20 @@ public class JpaProductRepository implements ProductRepository {
     @Transactional(readOnly = true)
     public List<Product> findAll() {
         return productJpaRepository.findAll().stream().map(ProductEntityMapper::toDomain).toList();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public PageResult findAll(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ProductEntity> pageResult = productJpaRepository.findAll(pageable);
+        List<Product> content = pageResult.getContent().stream()
+                .map(ProductEntityMapper::toDomain)
+                .toList();
+        return new PageResult(content, pageResult.getTotalElements());
     }
 
     /**

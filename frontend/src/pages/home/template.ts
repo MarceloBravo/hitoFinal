@@ -14,6 +14,7 @@ export class Template{
     private root: HTMLElement; 
     private title: string = 'Tienda on-line';
     private optionsCategories: string;
+    private optionsMarks: string;
     private productsData: ProductResponseApi | string;
     private activaPage: number = 1;
     private loadStatus: LoadStatus;
@@ -25,11 +26,13 @@ export class Template{
      * @param productsData      Datos de productos o mensaje de error.
      * @param activaPage        Página activa actual.
      * @param loadStatus        Estado de carga de la interfaz.
+     * @param optionsMarks      Opciones de marcas (JSON) para los filtros.
      */
-    constructor(root: HTMLElement, title: string, optionsCategories: string, productsData: ProductResponseApi | string, activaPage: number, loadStatus: LoadStatus){
+    constructor(root: HTMLElement, title: string, optionsCategories: string, productsData: ProductResponseApi | string, activaPage: number, loadStatus: LoadStatus, optionsMarks: string){
         this.root = root;
         this.title = title;
         this.optionsCategories = optionsCategories;
+        this.optionsMarks = optionsMarks;
         this.productsData = productsData;
         this.activaPage = activaPage;
         this.loadStatus = loadStatus;
@@ -57,10 +60,10 @@ export class Template{
                 }
                 return this.productsData.products.map((product) => `
                     <product-card
-                        img="${product.thumbnail}"
-                        title="${product.title}"
+                        img="${import.meta.env.VITE_IMAGE_URL}${product.imagePath}"
+                        title="${product.name}"
                         description="${product.description}"
-                        price="${product.price}"
+                        price="${product.priceSale}"
                     ></product-card>
                 `).join('');
             case LoadStatus.LOADING:
@@ -111,7 +114,7 @@ export class Template{
                         <aside-section 
                             title="marcas"
                             type="checkbox" 
-                            options='[{"label":"Samsung","type":"checkbox","checked":true},{"label":"Apple","type":"checkbox"},{"label":"Sony","type":"checkbox"}]'>
+                            options='[${this.optionsMarks}]'>
                         </aside-section>
 
                         <aside-section 

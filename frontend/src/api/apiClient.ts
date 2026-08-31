@@ -48,7 +48,6 @@ export const apiClient = async <T,>(endpoint: string, options: RequestInit = {})
     }
 
     const responseData = (await response.json()) as T;
-    debugger
     return {
       data: responseData,
       ok: true,

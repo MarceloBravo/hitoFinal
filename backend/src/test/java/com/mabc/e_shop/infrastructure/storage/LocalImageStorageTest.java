@@ -10,6 +10,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -77,5 +78,39 @@ class LocalImageStorageTest {
 
         assertTrue(Files.exists(external));
         Files.deleteIfExists(external);
+    }
+
+    @Test
+    @DisplayName("toPublicPath: devuelve la ruta publica /uploads/<archivo>")
+    void toPublicPathBuildsWebPath() throws Exception {
+        LocalImageStorage storage = storage();
+        Path stored = storage.store(image("notebook.png", "image/png"));
+
+        String publicPath = storage.toPublicPath(stored);
+
+        assertEquals("/uploads/" + stored.getFileName().toString(), publicPath);
+    }
+
+    @Test
+    @DisplayName("toPhysicalPath: resuelve la ruta publica a la fisica local")
+    void toPhysicalPathResolvesPublicPath() throws Exception {
+        LocalImageStorage storage = storage();
+        Path stored = storage.store(image("notebook.png", "image/png"));
+
+        Path physical = storage.toPhysicalPath("/uploads/" + stored.getFileName().toString());
+
+        assertEquals(stored, physical);
+        assertTrue(Files.exists(physical));
+    }
+
+    @Test
+    @DisplayName("toPhysicalPath: devuelve null para rutas http o ajenas al almacenamiento")
+    void toPhysicalPathRejectsExternalOrHttp() {
+        LocalImageStorage storage = storage();
+
+        assertEquals(null, storage.toPhysicalPath("http://localhost:8080/uploads/a.png"));
+        assertEquals(null, storage.toPhysicalPath("https://cdn.example.com/a.png"));
+        assertEquals(null, storage.toPhysicalPath("C:/outside/a.png"));
+        assertEquals(null, storage.toPhysicalPath("/uploads/../a.png"));
     }
 }

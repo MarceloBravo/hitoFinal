@@ -15,6 +15,15 @@ import java.util.Optional;
 public interface ProductRepository {
 
     /**
+     * Resultado de una consulta paginada.
+     *
+     * @param content contenido de la página.
+     * @param total   cantidad total de registros.
+     */
+    record PageResult(List<Product> content, long total) {
+    }
+
+    /**
      * Busca un producto por su identificador.
      *
      * @param id identificador del producto.
@@ -28,6 +37,15 @@ public interface ProductRepository {
      * @return lista de todos los productos.
      */
     List<Product> findAll();
+
+    /**
+     * Obtiene una página de productos.
+     *
+     * @param page número de página (base 0).
+     * @param size cantidad de elementos por página.
+     * @return el resultado paginado con el contenido y el total de registros.
+     */
+    PageResult findAll(int page, int size);
 
     /**
      * Guarda o actualiza un producto.

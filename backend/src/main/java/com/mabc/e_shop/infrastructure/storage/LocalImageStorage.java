@@ -23,6 +23,7 @@ public class LocalImageStorage implements ImageStorage {
 
     private static final Set<String> EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp");
     private static final Set<String> CONTENT_TYPES = Set.of("image/jpeg", "image/png", "image/webp");
+    private static final String PUBLIC_PREFIX = "/uploads/";
 
     private final Path baseDir;
 
@@ -45,6 +46,31 @@ public class LocalImageStorage implements ImageStorage {
             throw new IllegalStateException("No se pudo almacenar la imagen.", e);
         }
         return target;
+    }
+
+    @Override
+    public String toPublicPath(Path stored) {
+        Path absolute = stored.toAbsolutePath().normalize();
+        if (!absolute.startsWith(baseDir)) {
+            throw new IllegalStateException("La imagen está fuera del directorio de almacenamiento.");
+        }
+        return PUBLIC_PREFIX + absolute.getFileName();
+    }
+
+    @Override
+    public Path toPhysicalPath(String publicPath) {
+        if (publicPath == null || publicPath.isBlank()
+                || publicPath.startsWith("http://")
+                || publicPath.startsWith("https://")) {
+            return null;
+        }
+        String fileName = publicPath.startsWith(PUBLIC_PREFIX)
+                ? publicPath.substring(PUBLIC_PREFIX.length())
+                : publicPath;
+        if (fileName.isBlank() || fileName.contains("/") || fileName.contains("\\")) {
+            return null;
+        }
+        return baseDir.resolve(fileName).normalize();
     }
 
     @Override

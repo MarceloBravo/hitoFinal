@@ -2,6 +2,7 @@ package com.mabc.e_shop.application.usecase;
 
 import com.mabc.e_shop.domain.entity.Product;
 import com.mabc.e_shop.domain.repository.ProductRepository;
+import com.mabc.e_shop.domain.repository.ProductRepository.PageResult;
 
 import java.util.List;
 
@@ -28,5 +29,16 @@ public class GetAllProductsUseCase {
      */
     public List<Product> execute() {
         return productRepository.findAll();
+    }
+
+    /**
+     * Obtiene una página de productos.
+     *
+     * @param page número de página (base 0).
+     * @param size cantidad de elementos por página.
+     * @return el resultado paginado con el contenido y el total de registros.
+     */
+    public PageResult execute(int page, int size) {
+        return productRepository.findAll(page, size);
     }
 }

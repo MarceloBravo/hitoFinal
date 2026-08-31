@@ -8,7 +8,8 @@ import java.nio.file.Path;
  * Puerto de almacenamiento de imágenes de productos.
  *
  * <p>Permite persistir un archivo de imagen en el sistema de almacenamiento
- * seleccionado y liberar recursos previamente guardados.
+ * y liberar recursos previamente guardados. También expone la conversión
+ * entre la ruta física en disco y la ruta pública servida por HTTP.
  */
 public interface ImageStorage {
 
@@ -19,6 +20,26 @@ public interface ImageStorage {
      * @return la ruta absoluta donde quedó almacenada la imagen.
      */
     Path store(MultipartFile file);
+
+    /**
+     * Convierte la ruta física de una imagen en su ruta pública accesible
+     * por HTTP (por ejemplo {@code /uploads/<archivo>}).
+     *
+     * @param stored ruta física de la imagen almacenada.
+     * @return la ruta pública de la imagen.
+     */
+    String toPublicPath(Path stored);
+
+    /**
+     * Convierte la ruta pública de una imagen en su ruta física en disco.
+     *
+     * <p>Devuelve {@code null} si la ruta no corresponde a una imagen del
+     * almacenamiento (por ejemplo rutas absolutas externas o HTTP).
+     *
+     * @param publicPath ruta pública de la imagen.
+     * @return la ruta física de la imagen o {@code null} si no es local.
+     */
+    Path toPhysicalPath(String publicPath);
 
     /**
      * Elimina una imagen guardada; si la ruta está fuera del almacenamiento

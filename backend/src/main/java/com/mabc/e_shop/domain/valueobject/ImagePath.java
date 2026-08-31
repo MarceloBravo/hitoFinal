@@ -9,9 +9,10 @@ import java.nio.file.Path;
 /**
  * Value object que representa la ruta de la imagen de un producto.
  *
- * <p>Acepta URLs absolutas (http/https/file) o rutas de sistema de archivos
- * locales absolutas; rechaza referencias relativas o valores vacíos. Un valor
- * {@code null} se permite (producto sin imagen).
+ * <p>Acepta URLs absolutas (http/https/file), rutas de sistema de archivos
+ * locales absolutas y rutas web relativas al servidor (que comienzan con
+ * {@code /}, como {@code /uploads/...}); rechaza valores vacíos o relativos.
+ * Un valor {@code null} se permite (producto sin imagen).
  *
  * @param value ruta de la imagen; puede ser {@code null}.
  */
@@ -39,10 +40,15 @@ public record ImagePath(String value) {
                 }
             }
         } catch (URISyntaxException e) {
-            // No es una URI válida; se valida como ruta de archivo a continuación.
+            // No es una URI válida; se valida como ruta a continuación.
         }
 
-        // 2. Soporte para rutas de sistema de archivos local (Windows/Linux) o rutas UNC
+        // 2. Soporte para rutas web relativas al servidor (p. ej. "/uploads/imagen.jpg")
+        if (ruta.startsWith("/")) {
+            return true;
+        }
+
+        // 3. Soporte para rutas de sistema de archivos local (Windows/Linux) o rutas UNC
         try {
             Path path = Path.of(ruta);
             return path.isAbsolute();
