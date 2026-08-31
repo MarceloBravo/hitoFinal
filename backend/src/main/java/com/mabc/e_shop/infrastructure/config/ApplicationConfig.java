@@ -12,6 +12,7 @@ import com.mabc.e_shop.application.usecase.GetCartByIdUseCase;
 import com.mabc.e_shop.application.usecase.GetCategoryByIdUseCase;
 import com.mabc.e_shop.application.usecase.GetMarkByIdUseCase;
 import com.mabc.e_shop.application.usecase.GetProductByIdUseCase;
+import com.mabc.e_shop.application.usecase.RemoveItemFromCartUseCase;
 import com.mabc.e_shop.application.usecase.SaveCategoryUseCase;
 import com.mabc.e_shop.application.usecase.SaveMarkUseCase;
 import com.mabc.e_shop.domain.repository.CartRepository;
@@ -97,6 +98,17 @@ public class ApplicationConfig {
         ProductRepository productRepository
     ) {
         return new AddItemToCartUseCase(cartRepository, productRepository);
+    }
+
+    /**
+     * Crea el caso de uso que elimina un ítem específico de un carrito.
+     *
+     * @param cartRepository repositorio de carritos de compras.
+     * @return el caso de uso configurado.
+     */
+    @Bean
+    public RemoveItemFromCartUseCase removeItemFromCartUseCase(CartRepository cartRepository) {
+        return new RemoveItemFromCartUseCase(cartRepository);
     }
 
     /**

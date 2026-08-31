@@ -4,6 +4,7 @@ import com.mabc.e_shop.application.usecase.AddItemToCartUseCase;
 import com.mabc.e_shop.application.usecase.CreateCartUseCase;
 import com.mabc.e_shop.application.usecase.DeleteCartUseCase;
 import com.mabc.e_shop.application.usecase.GetCartByIdUseCase;
+import com.mabc.e_shop.application.usecase.RemoveItemFromCartUseCase;
 import com.mabc.e_shop.domain.entity.Cart;
 import com.mabc.e_shop.infrastructure.http.dto.CartItemRequestDto;
 import com.mabc.e_shop.infrastructure.http.dto.CartResponseDto;
@@ -38,25 +39,29 @@ public class CartController {
     private final AddItemToCartUseCase addItemToCartUseCase;
     private final GetCartByIdUseCase getCartByIdUseCase;
     private final DeleteCartUseCase deleteCartUseCase;
+    private final RemoveItemFromCartUseCase removeItemFromCartUseCase;
 
     /**
      * Crea el controlador con los casos de uso de carritos.
      *
-     * @param createCartUseCase    caso de uso que crea carritos nuevos.
-     * @param addItemToCartUseCase caso de uso que agrega ítems al carrito.
-     * @param getCartByIdUseCase   caso de uso que consulta un carrito por id.
-     * @param deleteCartUseCase    caso de uso que elimina un carrito por id.
+     * @param createCartUseCase         caso de uso que crea carritos nuevos.
+     * @param addItemToCartUseCase      caso de uso que agrega ítems al carrito.
+     * @param getCartByIdUseCase        caso de uso que consulta un carrito por id.
+     * @param deleteCartUseCase         caso de uso que elimina un carrito por id.
+     * @param removeItemFromCartUseCase caso de uso que elimina un ítem del carrito.
      */
     public CartController(
         CreateCartUseCase createCartUseCase,
         AddItemToCartUseCase addItemToCartUseCase,
         GetCartByIdUseCase getCartByIdUseCase,
-        DeleteCartUseCase deleteCartUseCase
+        DeleteCartUseCase deleteCartUseCase,
+        RemoveItemFromCartUseCase removeItemFromCartUseCase
     ) {
         this.createCartUseCase = createCartUseCase;
         this.addItemToCartUseCase = addItemToCartUseCase;
         this.getCartByIdUseCase = getCartByIdUseCase;
         this.deleteCartUseCase = deleteCartUseCase;
+        this.removeItemFromCartUseCase = removeItemFromCartUseCase;
     }
 
     /**
@@ -148,5 +153,30 @@ public class CartController {
     ) {
         deleteCartUseCase.execute(id);
         return ResponseEntity.ok().body(ApiResponseFactory.deleted("Carrito eliminado correctamente.", null));
+    }
+
+    /**
+     * Elimina un producto específico (ítem) de un carrito existente.
+     *
+     * @param cartId identificador del carrito.
+     * @param itemId identificador del ítem a eliminar.
+     * @return la respuesta estándar con el carrito actualizado y estado HTTP 200.
+     */
+    @Operation(summary = "Elimina un producto de un carrito",
+            description = "Elimina el ítem correspondiente al id entregado del carrito dado y recalcula su subtotal.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "200", description = "Producto eliminado del carrito correctamente."),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "404", description = "Carrito o ítem inexistente.")
+    })
+    @DeleteMapping(value = "/{cartId}/items/{itemId}")
+    public ResponseEntity<ApiResponse<CartResponseDto>> removeItem(
+        @PathVariable Long cartId,
+        @PathVariable Long itemId
+    ) {
+        Cart cart = removeItemFromCartUseCase.execute(cartId, itemId);
+        return ResponseEntity.ok().body(ApiResponseFactory.updated(
+                "Producto eliminado del carrito correctamente.", CartHttpMapper.toResponse(cart)));
     }
 }

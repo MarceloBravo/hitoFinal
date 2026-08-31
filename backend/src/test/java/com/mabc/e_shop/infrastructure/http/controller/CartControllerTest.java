@@ -4,6 +4,7 @@ import com.mabc.e_shop.application.usecase.AddItemToCartUseCase;
 import com.mabc.e_shop.application.usecase.CreateCartUseCase;
 import com.mabc.e_shop.application.usecase.DeleteCartUseCase;
 import com.mabc.e_shop.application.usecase.GetCartByIdUseCase;
+import com.mabc.e_shop.application.usecase.RemoveItemFromCartUseCase;
 import com.mabc.e_shop.domain.entity.Cart;
 import com.mabc.e_shop.domain.entity.Category;
 import com.mabc.e_shop.domain.entity.Mark;
@@ -49,6 +50,9 @@ class CartControllerTest {
 
     @MockitoBean
     private DeleteCartUseCase deleteCartUseCase;
+
+    @MockitoBean
+    private RemoveItemFromCartUseCase removeItemFromCartUseCase;
 
     @Test
     @DisplayName("GET busca un carrito por id y responde 200 con el formato estándar")
@@ -184,5 +188,33 @@ class CartControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.statusCode").value(404))
                 .andExpect(jsonPath("$.message").value("El carrito no existe o no es válido."));
+    }
+
+    @Test
+    @DisplayName("DELETE elimina un producto del carrito y responde 200 con subtotal actualizado")
+    void removesItemFromCart() throws Exception {
+        Cart cart = new Cart(7L);
+        cart.addItem(buildProduct(), new Quantity(1));
+        when(removeItemFromCartUseCase.execute(7L, 10L)).thenReturn(cart);
+
+        mockMvc.perform(delete("/api/v1/carts/7/items/10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.statusCode").value(200))
+                .andExpect(jsonPath("$.message").value("Producto eliminado del carrito correctamente."))
+                .andExpect(jsonPath("$.data.id").value(7))
+                .andExpect(jsonPath("$.data.items.length()").value(1))
+                .andExpect(jsonPath("$.data.subTotal").value(50.0));
+    }
+
+    @Test
+    @DisplayName("DELETE de un item inexistente en el carrito responde 404")
+    void rejectsMissingItemOnDeleteAs404() throws Exception {
+        when(removeItemFromCartUseCase.execute(7L, 99L))
+                .thenThrow(new com.mabc.e_shop.domain.exception.ResourceNotFoundException("El ítem no existe en el carrito."));
+
+        mockMvc.perform(delete("/api/v1/carts/7/items/99"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.statusCode").value(404))
+                .andExpect(jsonPath("$.message").value("El ítem no existe en el carrito."));
     }
 }

@@ -99,4 +99,37 @@ class CartTest {
     void itemsAreUnmodifiable() {
         assertThrows(UnsupportedOperationException.class, () -> cart.getItems().add(null));
     }
+
+    @Test
+    @DisplayName("removeItemById: elimina el item y recalcula el subtotal")
+    void removeItemByIdRemovesAndRecalculatesSubTotal() {
+        Product other = new Product(2L, new Mark(1L, new Name("Lenovo")), List.of(),
+                new Name("Mouse"), new Description("Mouse inalambrico"),
+                new Stock(20), new Weight(100), new Price(5000), new Price(10000),
+                new ImagePath("https://images.example.com/products/mouse.png"));
+
+        cart.addItemWithId(10L, product, new Quantity(2));
+        cart.addItemWithId(11L, other, new Quantity(3));
+
+        cart.removeItemById(10L);
+
+        assertEquals(1, cart.getItems().size());
+        assertEquals(11L, cart.getItems().get(0).getId());
+        assertEquals(30000, cart.getSubTotal());
+    }
+
+    @Test
+    @DisplayName("removeItemById: lanza excepcion si el item no existe")
+    void removeItemByIdRejectsMissingItem() {
+        cart.addItemWithId(10L, product, new Quantity(2));
+
+        assertThrows(IllegalArgumentException.class, () -> cart.removeItemById(99L));
+        assertEquals(1, cart.getItems().size());
+    }
+
+    @Test
+    @DisplayName("removeItemById: rechaza id nulo")
+    void removeItemByIdRejectsNullId() {
+        assertThrows(NullPointerException.class, () -> cart.removeItemById(null));
+    }
 }

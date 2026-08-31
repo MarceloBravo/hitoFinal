@@ -129,4 +129,22 @@ public class Cart {
         calculateSubTotal();
         return item;
     }
+
+    /**
+     * Elimina del carrito el ítem con el identificador entregado y recalcula
+     * el subtotal.
+     *
+     * @param itemId identificador del ítem a eliminar; no puede ser {@code null}.
+     * @throws NullPointerException           si {@code itemId} es {@code null}.
+     * @throws IllegalArgumentException      si el ítem no existe en el carrito.
+     */
+    public void removeItemById(Long itemId) {
+        Objects.requireNonNull(itemId, "El id del ítem no puede ser nulo.");
+
+        boolean removed = items.removeIf(item -> Objects.equals(item.getId(), itemId));
+        if (!removed) {
+            throw new IllegalArgumentException("El ítem no existe en el carrito.");
+        }
+        calculateSubTotal();
+    }
 }
