@@ -34,4 +34,11 @@ public interface CartRepository {
      * @return el carrito persistido.
      */
     Cart save(Cart cart);
+
+    /**
+     * Elimina un carrito por su identificador.
+     *
+     * @param id identificador del carrito a eliminar.
+     */
+    void deleteById(Long id);
 }

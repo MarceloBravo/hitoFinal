@@ -2,6 +2,7 @@ package com.mabc.e_shop.infrastructure.http.controller;
 
 import com.mabc.e_shop.application.usecase.AddItemToCartUseCase;
 import com.mabc.e_shop.application.usecase.CreateCartUseCase;
+import com.mabc.e_shop.application.usecase.DeleteCartUseCase;
 import com.mabc.e_shop.application.usecase.GetCartByIdUseCase;
 import com.mabc.e_shop.domain.entity.Cart;
 import com.mabc.e_shop.domain.entity.Category;
@@ -25,6 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -44,6 +46,9 @@ class CartControllerTest {
 
     @MockitoBean
     private GetCartByIdUseCase getCartByIdUseCase;
+
+    @MockitoBean
+    private DeleteCartUseCase deleteCartUseCase;
 
     @Test
     @DisplayName("GET busca un carrito por id y responde 200 con el formato estándar")
@@ -153,6 +158,29 @@ class CartControllerTest {
         mockMvc.perform(post("/api/v1/carts/99/items")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"productId\":3,\"quantity\":1}"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.statusCode").value(404))
+                .andExpect(jsonPath("$.message").value("El carrito no existe o no es válido."));
+    }
+
+    @Test
+    @DisplayName("DELETE elimina un carrito y responde 200 con el formato estándar")
+    void deletesCart() throws Exception {
+        when(deleteCartUseCase.execute(7L)).thenReturn(true);
+
+        mockMvc.perform(delete("/api/v1/carts/7"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.statusCode").value(200))
+                .andExpect(jsonPath("$.message").value("Carrito eliminado correctamente."));
+    }
+
+    @Test
+    @DisplayName("DELETE de un carrito inexistente responde 404")
+    void rejectsMissingCartOnDeleteAs404() throws Exception {
+        when(deleteCartUseCase.execute(99L))
+                .thenThrow(new com.mabc.e_shop.domain.exception.ResourceNotFoundException("El carrito no existe o no es válido."));
+
+        mockMvc.perform(delete("/api/v1/carts/99"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.statusCode").value(404))
                 .andExpect(jsonPath("$.message").value("El carrito no existe o no es válido."));

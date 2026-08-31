@@ -63,6 +63,15 @@ public class JpaCartRepository implements CartRepository {
         return toDomain(saved);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Transactional
+    public void deleteById(Long id) {
+        cartJpaRepository.deleteById(id);
+    }
+
     private Cart toDomain(CartEntity entity) {
         Cart cart = new Cart(entity.getId());
         if (entity.getItems() != null) {

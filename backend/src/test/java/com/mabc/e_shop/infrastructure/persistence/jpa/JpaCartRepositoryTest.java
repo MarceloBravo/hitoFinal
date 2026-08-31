@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class JpaCartRepositoryTest {
@@ -113,5 +114,13 @@ class JpaCartRepositoryTest {
         assertEquals(1L, saved.getId());
         assertEquals(1, saved.getItems().size());
         assertEquals(1600000.0, saved.getSubTotal());
+    }
+
+    @Test
+    @DisplayName("deleteById: delega la eliminacion en el repositorio Spring Data")
+    void deleteByIdDelegates() {
+        repository.deleteById(1L);
+
+        verify(jpaRepository).deleteById(1L);
     }
 }

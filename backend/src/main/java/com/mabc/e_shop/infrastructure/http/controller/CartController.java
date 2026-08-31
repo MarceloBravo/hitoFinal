@@ -2,6 +2,7 @@ package com.mabc.e_shop.infrastructure.http.controller;
 
 import com.mabc.e_shop.application.usecase.AddItemToCartUseCase;
 import com.mabc.e_shop.application.usecase.CreateCartUseCase;
+import com.mabc.e_shop.application.usecase.DeleteCartUseCase;
 import com.mabc.e_shop.application.usecase.GetCartByIdUseCase;
 import com.mabc.e_shop.domain.entity.Cart;
 import com.mabc.e_shop.infrastructure.http.dto.CartItemRequestDto;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,6 +37,7 @@ public class CartController {
     private final CreateCartUseCase createCartUseCase;
     private final AddItemToCartUseCase addItemToCartUseCase;
     private final GetCartByIdUseCase getCartByIdUseCase;
+    private final DeleteCartUseCase deleteCartUseCase;
 
     /**
      * Crea el controlador con los casos de uso de carritos.
@@ -42,15 +45,18 @@ public class CartController {
      * @param createCartUseCase    caso de uso que crea carritos nuevos.
      * @param addItemToCartUseCase caso de uso que agrega ítems al carrito.
      * @param getCartByIdUseCase   caso de uso que consulta un carrito por id.
+     * @param deleteCartUseCase    caso de uso que elimina un carrito por id.
      */
     public CartController(
         CreateCartUseCase createCartUseCase,
         AddItemToCartUseCase addItemToCartUseCase,
-        GetCartByIdUseCase getCartByIdUseCase
+        GetCartByIdUseCase getCartByIdUseCase,
+        DeleteCartUseCase deleteCartUseCase
     ) {
         this.createCartUseCase = createCartUseCase;
         this.addItemToCartUseCase = addItemToCartUseCase;
         this.getCartByIdUseCase = getCartByIdUseCase;
+        this.deleteCartUseCase = deleteCartUseCase;
     }
 
     /**
@@ -120,5 +126,27 @@ public class CartController {
         Cart cart = addItemToCartUseCase.execute(id, request.productId(), request.quantity());
         return ResponseEntity.ok().body(ApiResponseFactory.updated(
                 "Producto agregado al carrito correctamente.", CartHttpMapper.toResponse(cart)));
+    }
+
+    /**
+     * Elimina un carrito existente.
+     *
+     * @param id identificador del carrito a eliminar.
+     * @return la respuesta estándar con estado HTTP 200.
+     */
+    @Operation(summary = "Elimina un carrito existente",
+            description = "Elimina los datos del carrito correspondiente al id entregado.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "200", description = "Carrito eliminado correctamente."),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "404", description = "Carrito inexistente.")
+    })
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<ApiResponse<CartResponseDto>> delete(
+        @PathVariable Long id
+    ) {
+        deleteCartUseCase.execute(id);
+        return ResponseEntity.ok().body(ApiResponseFactory.deleted("Carrito eliminado correctamente.", null));
     }
 }
