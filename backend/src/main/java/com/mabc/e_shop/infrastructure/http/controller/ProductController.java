@@ -3,6 +3,7 @@ package com.mabc.e_shop.infrastructure.http.controller;
 import com.mabc.e_shop.application.usecase.CreateProductUseCase;
 import com.mabc.e_shop.application.usecase.GetAllProductsUseCase;
 import com.mabc.e_shop.application.usecase.GetProductByIdUseCase;
+import com.mabc.e_shop.application.usecase.DeleteProductUseCase;
 import com.mabc.e_shop.domain.entity.Product;
 import com.mabc.e_shop.domain.valueobject.ImagePath;
 import com.mabc.e_shop.infrastructure.http.dto.ProductRequestDto;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,6 +50,7 @@ public class ProductController {
     private final CreateProductUseCase createProductUseCase;
     private final GetAllProductsUseCase getAllProductsUseCase;
     private final GetProductByIdUseCase getProductByIdUseCase;
+    private final DeleteProductUseCase deleteProductUseCase;
     private final ImageStorage imageStorage;
 
     /**
@@ -62,12 +65,14 @@ public class ProductController {
         CreateProductUseCase createProductUseCase,
         GetAllProductsUseCase getAllProductsUseCase,
         GetProductByIdUseCase getProductByIdUseCase,
-        ImageStorage imageStorage
+        ImageStorage imageStorage,
+        DeleteProductUseCase deleteProductUseCase
     ) {
         this.createProductUseCase = createProductUseCase;
         this.getAllProductsUseCase = getAllProductsUseCase;
         this.getProductByIdUseCase = getProductByIdUseCase;
         this.imageStorage = imageStorage;
+        this.deleteProductUseCase = deleteProductUseCase;
     }
 
     /**
@@ -253,6 +258,27 @@ public class ProductController {
             return Path.of(imagePath);
         } catch (RuntimeException e) {
             return null;
+        }
+    }
+
+    @Operation(summary = "Elimina un producto existente",
+            description = "Elimina los datos del producto correspondiente al id entregado.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "200", description = "Producto eliminado correctamente."),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "404", description = "Producto inexistente.")
+    })
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<ApiResponse<ProductResponseDto>> delete(
+        @PathVariable Long id
+    ){
+        try{
+            deleteProductUseCase.execute(id);
+            return ResponseEntity.ok()
+                .body(ApiResponseFactory.deleted("Producto eliminado correctamente.", null));
+        } catch (RuntimeException e) {
+            throw e;
         }
     }
 }

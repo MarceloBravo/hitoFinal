@@ -1,6 +1,7 @@
 package com.mabc.e_shop.infrastructure.http.controller;
 
 import com.mabc.e_shop.application.usecase.CreateProductUseCase;
+import com.mabc.e_shop.application.usecase.DeleteProductUseCase;
 import com.mabc.e_shop.application.usecase.GetAllProductsUseCase;
 import com.mabc.e_shop.application.usecase.GetProductByIdUseCase;
 import com.mabc.e_shop.domain.entity.Category;
@@ -37,6 +38,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -58,6 +60,9 @@ class ProductControllerTest {
 
     @MockitoBean
     private GetProductByIdUseCase getProductByIdUseCase;
+
+    @MockitoBean
+    private DeleteProductUseCase deleteProductUseCase;
 
     @MockitoBean
     private ImageStorage imageStorage;
@@ -315,5 +320,28 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.data").doesNotExist());
 
         verify(imageStorage).delete(eq(STORED_IMAGE));
+    }
+
+    @Test
+    @DisplayName("DELETE elimina un producto y responde 200 con el formato estándar")
+    void deletesProduct() throws Exception {
+        when(deleteProductUseCase.execute(5L)).thenReturn(true);
+
+        mockMvc.perform(delete("/api/v1/products/5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.statusCode").value(200))
+                .andExpect(jsonPath("$.message").value("Producto eliminado correctamente."));
+    }
+
+    @Test
+    @DisplayName("DELETE de un producto inexistente responde 404")
+    void rejectsMissingProductOnDeleteAs404() throws Exception {
+        when(deleteProductUseCase.execute(99L))
+                .thenThrow(new com.mabc.e_shop.domain.exception.ResourceNotFoundException("El producto no existe."));
+
+        mockMvc.perform(delete("/api/v1/products/99"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.statusCode").value(404))
+                .andExpect(jsonPath("$.message").value("El producto no existe."));
     }
 }

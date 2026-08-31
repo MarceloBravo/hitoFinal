@@ -54,3 +54,6 @@ frontend/.env
 .guía.txt
 
 *.pdf
+
+# Uploaded product images
+backend/uploads/

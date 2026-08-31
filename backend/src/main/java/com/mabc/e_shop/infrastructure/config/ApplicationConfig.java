@@ -3,6 +3,7 @@ package com.mabc.e_shop.infrastructure.config;
 import com.mabc.e_shop.application.usecase.AddItemToCartUseCase;
 import com.mabc.e_shop.application.usecase.CreateCartUseCase;
 import com.mabc.e_shop.application.usecase.CreateProductUseCase;
+import com.mabc.e_shop.application.usecase.DeleteProductUseCase;
 import com.mabc.e_shop.application.usecase.GetAllCategoriesUseCase;
 import com.mabc.e_shop.application.usecase.GetAllMarksUseCase;
 import com.mabc.e_shop.application.usecase.GetAllProductsUseCase;
@@ -16,6 +17,7 @@ import com.mabc.e_shop.domain.repository.CartRepository;
 import com.mabc.e_shop.domain.repository.CategoryRepository;
 import com.mabc.e_shop.domain.repository.MarkRepository;
 import com.mabc.e_shop.domain.repository.ProductRepository;
+import com.mabc.e_shop.infrastructure.storage.ImageStorage;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -116,6 +118,21 @@ public class ApplicationConfig {
     @Bean
     public GetProductByIdUseCase getProductByIdUseCase(ProductRepository productRepository) {
         return new GetProductByIdUseCase(productRepository);
+    }
+
+    /**
+     * Crea el caso de uso que elimina un producto por su identificador.
+     *
+     * @param productRepository repositorio de productos.
+     * @param imageStorage       almacenamiento de las imágenes de los productos.
+     * @return el caso de uso configurado.
+     */
+    @Bean
+    public DeleteProductUseCase deleteProductUseCase(
+        ProductRepository productRepository,
+        ImageStorage imageStorage
+    ) {
+        return new DeleteProductUseCase(productRepository, imageStorage);
     }
 
     /**

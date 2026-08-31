@@ -63,4 +63,16 @@ public final class ApiResponseFactory {
     public static <T> ApiResponse<T> error(int statusCode, String message) {
         return new ApiResponse<>(statusCode, message, null);
     }
+
+    /**
+     * Construye la respuesta de una eliminación exitosa de recursos.
+     *
+     * @param message mensaje descriptivo de la operación realizada.
+     * @param data    datos de la operación; puede ser {@code null}.
+     * @param <T>     tipo de los datos retornados.
+     * @return la respuesta estándar con estado HTTP 200.
+     */
+    public static <T> ApiResponse<T> deleted(String message, T data) {
+        return new ApiResponse<>(200, message, data);
+    }
 }
