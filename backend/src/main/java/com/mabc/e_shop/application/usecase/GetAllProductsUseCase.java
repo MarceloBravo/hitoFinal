@@ -43,15 +43,15 @@ public class GetAllProductsUseCase {
     }
 
     /**
-     * Obtiene una página de productos, opcionalmente filtrados por categoría.
+     * Obtiene una página de productos, opcionalmente filtrados por categoría y/o marca.
      *
      * @param page       número de página (base 0).
      * @param size       cantidad de elementos por página.
-     * @param categoryId identificador de la categoría para filtrar, o {@code null}
-     *                   para consultar sin filtro de categoría.
+     * @param categoryId identificador de la categoría para filtrar, o {@code null}.
+     * @param markId     identificador de la marca para filtrar, o {@code null}.
      * @return el resultado paginado con el contenido y el total de registros.
      */
-    public PageResult execute(int page, int size, Long categoryId) {
-        return productRepository.findAll(page, size, categoryId);
+    public PageResult execute(int page, int size, Long categoryId, Long markId) {
+        return productRepository.findAll(page, size, categoryId, markId);
     }
 }

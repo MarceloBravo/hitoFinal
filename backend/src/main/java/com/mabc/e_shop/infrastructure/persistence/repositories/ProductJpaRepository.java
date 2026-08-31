@@ -32,4 +32,27 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long>
      */
     @Query("select distinct p from ProductEntity p join p.categories c where c.id = :categoryId")
     Page<ProductEntity> findAllByCategoryId(@Param("categoryId") Long categoryId, Pageable pageable);
+
+    /**
+     * Obtiene una página de productos de la marca entregada.
+     *
+     * @param markId   identificador de la marca.
+     * @param pageable información de paginación.
+     * @return página de productos de la marca.
+     */
+    @Query("select p from ProductEntity p where p.mark.id = :markId")
+    Page<ProductEntity> findAllByMarkId(@Param("markId") Long markId, Pageable pageable);
+
+    /**
+     * Obtiene una página de productos de la categoría y la marca entregadas.
+     *
+     * @param categoryId identificador de la categoría.
+     * @param markId     identificador de la marca.
+     * @param pageable   información de paginación.
+     * @return página de productos que pertenecen a la categoría y a la marca.
+     */
+    @Query("select distinct p from ProductEntity p join p.categories c where c.id = :categoryId and p.mark.id = :markId")
+    Page<ProductEntity> findAllByCategoryIdAndMarkId(@Param("categoryId") Long categoryId,
+                                                     @Param("markId") Long markId,
+                                                     Pageable pageable);
 }

@@ -108,6 +108,7 @@ public class ProductController {
      * @param limit      cantidad máxima de productos por página.
      * @param page       número de página (1-indexado).
      * @param categoryId identificador de la categoría para filtrar (opcional).
+     * @param markId     identificador de la marca para filtrar (opcional).
      * @return la respuesta paginada de productos y estado HTTP 200.
      */
     @Operation(summary = "Lista los productos de forma paginada",
@@ -122,12 +123,13 @@ public class ProductController {
     public ResponseEntity<ProductPaginatedResponseDto> findAll(
         @RequestParam(defaultValue = "10") int limit,
         @RequestParam(defaultValue = "1") int page,
-        @RequestParam(required = false) Long categoryId
+        @RequestParam(required = false) Long categoryId,
+        @RequestParam(required = false) Long markId
     ) {
         int safeLimit = Math.max(1, Math.min(limit, 100));
         int safePage = Math.max(1, page);
         int skip = (safePage - 1) * safeLimit;
-        ProductRepository.PageResult result = getAllProductsUseCase.execute(safePage - 1, safeLimit, categoryId);
+        ProductRepository.PageResult result = getAllProductsUseCase.execute(safePage - 1, safeLimit, categoryId, markId);
         List<ProductResponseDto> products = result.content().stream()
                 .map(ProductHttpMapper::toResponse)
                 .toList();
