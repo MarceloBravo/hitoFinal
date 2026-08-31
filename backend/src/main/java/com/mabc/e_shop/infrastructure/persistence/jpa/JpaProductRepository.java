@@ -70,6 +70,22 @@ public class JpaProductRepository implements ProductRepository {
      * {@inheritDoc}
      */
     @Override
+    @Transactional(readOnly = true)
+    public PageResult findAll(int page, int size, Long categoryId) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ProductEntity> pageResult = categoryId == null
+                ? productJpaRepository.findAll(pageable)
+                : productJpaRepository.findAllByCategoryId(categoryId, pageable);
+        List<Product> content = pageResult.getContent().stream()
+                .map(ProductEntityMapper::toDomain)
+                .toList();
+        return new PageResult(content, pageResult.getTotalElements());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     @Transactional
     public Product save(Product product) {
         ProductEntity saved = productJpaRepository.save(ProductEntityMapper.toEntity(product));

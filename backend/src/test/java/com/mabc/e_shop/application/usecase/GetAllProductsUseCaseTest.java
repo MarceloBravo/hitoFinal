@@ -44,4 +44,14 @@ class GetAllProductsUseCaseTest {
         assertEquals(pageResult, useCase.execute(2, 10));
         verify(productRepository).findAll(2, 10);
     }
+
+    @Test
+    @DisplayName("Retorna el resultado paginado filtrado por categoría delegando en el repositorio")
+    void returnsPaginatedProductsFilteredByCategory() {
+        PageResult pageResult = new PageResult(List.of(), 12);
+        when(productRepository.findAll(0, 5, 9L)).thenReturn(pageResult);
+
+        assertEquals(pageResult, useCase.execute(0, 5, 9L));
+        verify(productRepository).findAll(0, 5, 9L);
+    }
 }

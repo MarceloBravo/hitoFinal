@@ -41,4 +41,17 @@ public class GetAllProductsUseCase {
     public PageResult execute(int page, int size) {
         return productRepository.findAll(page, size);
     }
+
+    /**
+     * Obtiene una página de productos, opcionalmente filtrados por categoría.
+     *
+     * @param page       número de página (base 0).
+     * @param size       cantidad de elementos por página.
+     * @param categoryId identificador de la categoría para filtrar, o {@code null}
+     *                   para consultar sin filtro de categoría.
+     * @return el resultado paginado con el contenido y el total de registros.
+     */
+    public PageResult execute(int page, int size, Long categoryId) {
+        return productRepository.findAll(page, size, categoryId);
+    }
 }

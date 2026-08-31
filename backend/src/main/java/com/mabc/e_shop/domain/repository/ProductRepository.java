@@ -48,6 +48,17 @@ public interface ProductRepository {
     PageResult findAll(int page, int size);
 
     /**
+     * Obtiene una página de productos filtrados por categoría.
+     *
+     * @param page       número de página (base 0).
+     * @param size       cantidad de elementos por página.
+     * @param categoryId identificador de la categoría para filtrar, o {@code null}
+     *                   para consultar sin filtro de categoría.
+     * @return el resultado paginado con el contenido y el total de registros.
+     */
+    PageResult findAll(int page, int size, Long categoryId);
+
+    /**
      * Guarda o actualiza un producto.
      *
      * @param product producto a persistir.

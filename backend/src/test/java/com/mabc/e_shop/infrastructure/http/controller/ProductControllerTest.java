@@ -106,7 +106,7 @@ class ProductControllerTest {
     @Test
     @DisplayName("GET lista productos paginados y responde 200 con el formato esperado")
     void findsAllProducts() throws Exception {
-        when(getAllProductsUseCase.execute(0, 10)).thenReturn(
+        when(getAllProductsUseCase.execute(0, 10, null)).thenReturn(
                 new ProductRepository.PageResult(List.of(buildProduct(5L)), 1));
 
         mockMvc.perform(get("/api/v1/products"))
@@ -117,12 +117,14 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.products.length()").value(1))
                 .andExpect(jsonPath("$.products[0].id").value(5))
                 .andExpect(jsonPath("$.products[0].name").value("Notebook"));
+
+        verify(getAllProductsUseCase).execute(0, 10, null);
     }
 
     @Test
     @DisplayName("GET convierte page 1-indexado a base 0 y calcula skip")
     void findsAllProductsWithPaginationParams() throws Exception {
-        when(getAllProductsUseCase.execute(2, 10)).thenReturn(
+        when(getAllProductsUseCase.execute(2, 10, null)).thenReturn(
                 new ProductRepository.PageResult(List.of(buildProduct(25L)), 50));
 
         mockMvc.perform(get("/api/v1/products?limit=10&page=3"))
@@ -132,7 +134,24 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.total").value(50))
                 .andExpect(jsonPath("$.products[0].id").value(25));
 
-        verify(getAllProductsUseCase).execute(2, 10);
+        verify(getAllProductsUseCase).execute(2, 10, null);
+    }
+
+    @Test
+    @DisplayName("GET filtra productos por categoryId y responde 200")
+    void findsAllProductsFilteredByCategory() throws Exception {
+        when(getAllProductsUseCase.execute(0, 10, 7L)).thenReturn(
+                new ProductRepository.PageResult(List.of(buildProduct(5L)), 1));
+
+        mockMvc.perform(get("/api/v1/products?categoryId=7"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.limit").value(10))
+                .andExpect(jsonPath("$.skip").value(0))
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.products.length()").value(1))
+                .andExpect(jsonPath("$.products[0].id").value(5));
+
+        verify(getAllProductsUseCase).execute(0, 10, 7L);
     }
 
     @Test
