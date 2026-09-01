@@ -11,3 +11,10 @@ spring:
 app:
   upload:
     dir: target/uploads
+
+jwt:
+  secret: dGVzdC1zZWNyZXQta2V5LXdpdGgtYXQtbGVhc3QtMzItYnl0ZXM=
+  access-token:
+    expiration: 900000
+  refresh-token:
+    expiration: 604800000

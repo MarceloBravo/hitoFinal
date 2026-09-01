@@ -6,6 +6,7 @@ import com.mabc.e_shop.infrastructure.http.response.ApiResponse;
 import com.mabc.e_shop.infrastructure.http.response.ApiResponseFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -82,6 +83,20 @@ public class GlobalExceptionHandler {
                 .reduce((a, b) -> a + "; " + b)
                 .orElse("Petición inválida.");
         return build(HttpStatus.BAD_REQUEST, detail);
+    }
+
+    /**
+     * Traduce fallos de autenticación a respuestas HTTP 401.
+     *
+     * <p>Cubre credenciales inválidas, usuario inactivo y refresh tokens
+     * inválidos o expirados, preservando el mensaje descriptivo.
+     *
+     * @param exception excepción lanzada al fallar la autenticación.
+     * @return la respuesta estándar con el detalle del error.
+     */
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAuthentication(AuthenticationException exception) {
+        return build(HttpStatus.UNAUTHORIZED, exception.getMessage());
     }
 
     /**
