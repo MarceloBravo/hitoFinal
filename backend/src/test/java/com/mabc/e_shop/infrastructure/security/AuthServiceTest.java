@@ -3,7 +3,6 @@ package com.mabc.e_shop.infrastructure.security;
 import com.mabc.e_shop.infrastructure.http.dto.UserResponseDto;
 import com.mabc.e_shop.infrastructure.http.dto.auth.AuthResponseDto;
 import com.mabc.e_shop.infrastructure.http.dto.auth.LoginRequestDto;
-import com.mabc.e_shop.infrastructure.http.dto.auth.RefreshTokenRequestDto;
 import com.mabc.e_shop.infrastructure.http.dto.auth.RegisterRequestDto;
 import com.mabc.e_shop.infrastructure.persistence.entity.User;
 import com.mabc.e_shop.infrastructure.persistence.repositories.UserJpaRepository;
@@ -114,7 +113,6 @@ class AuthServiceTest {
     @Test
     @DisplayName("Renueva los tokens con un refresh token válido")
     void refreshReturnsNewTokensForValidRefreshToken() {
-        RefreshTokenRequestDto request = new RefreshTokenRequestDto("refresh-token");
         when(jwtService.extractTokenType("refresh-token")).thenReturn("refresh");
         when(jwtService.extractEmail("refresh-token")).thenReturn(EMAIL);
         UserDetails userDetails = mock(UserDetails.class);
@@ -126,7 +124,7 @@ class AuthServiceTest {
         when(jwtService.generateRefreshToken(EMAIL)).thenReturn("new-refresh");
         when(jwtService.getAccessTokenExpirationSeconds()).thenReturn(900L);
 
-        AuthResponseDto response = authService.refresh(request);
+        AuthResponseDto response = authService.refresh("refresh-token");
 
         assertEquals("new-access", response.accessToken());
         assertEquals("new-refresh", response.refreshToken());
@@ -135,16 +133,14 @@ class AuthServiceTest {
     @Test
     @DisplayName("Rechaza un access token usado como refresh token")
     void refreshRejectsAccessToken() {
-        RefreshTokenRequestDto request = new RefreshTokenRequestDto("access-token");
         when(jwtService.extractTokenType("access-token")).thenReturn("access");
 
-        assertThrows(BadCredentialsException.class, () -> authService.refresh(request));
+        assertThrows(BadCredentialsException.class, () -> authService.refresh("access-token"));
     }
 
     @Test
     @DisplayName("Rechaza un refresh token inválido o expirado")
     void refreshRejectsInvalidOrExpiredToken() {
-        RefreshTokenRequestDto request = new RefreshTokenRequestDto("refresh-token");
         when(jwtService.extractTokenType("refresh-token")).thenReturn("refresh");
         when(jwtService.extractEmail("refresh-token")).thenReturn(EMAIL);
         UserDetails userDetails = mock(UserDetails.class);
@@ -152,7 +148,7 @@ class AuthServiceTest {
         when(userDetailsService.loadUserByUsername(EMAIL)).thenReturn(userDetails);
         when(jwtService.isTokenValid("refresh-token", userDetails)).thenReturn(false);
 
-        assertThrows(BadCredentialsException.class, () -> authService.refresh(request));
+        assertThrows(BadCredentialsException.class, () -> authService.refresh("refresh-token"));
     }
 
     @Test
@@ -173,10 +169,9 @@ class AuthServiceTest {
     @Test
     @DisplayName("Rechaza un refresh token no parseable")
     void refreshRejectsUnparseableToken() {
-        RefreshTokenRequestDto request = new RefreshTokenRequestDto("basura");
         when(jwtService.extractTokenType("basura")).thenReturn(null);
 
-        assertThrows(BadCredentialsException.class, () -> authService.refresh(request));
+        assertThrows(BadCredentialsException.class, () -> authService.refresh("basura"));
     }
 
     private User user() {

@@ -1,6 +1,7 @@
 import './pages';
 
 import { Router } from './router';
+import { AuthStore } from './store/authStore';
 import { CartStore } from './store/cartStore';
 
 // Mapa de rutas URL 
@@ -8,6 +9,8 @@ const routes = {
   '/': 'home-page',
   '/home': 'home-page',
   '/contact': 'contact-page',
+  '/admin_login': 'admin-login-page',
+  '/admin_home': 'admin-home-page',
   '/404': 'page-404' 
 };
 
@@ -29,4 +32,7 @@ router.handleRoute();
 
 // Inicializar el carrito del invitado (leer cookie → cargar/crear carrito)
 CartStore.init();
+
+// Intentar restaurar la sesión desde el refresh token de la cookie HttpOnly
+void AuthStore.tryRestoreSession();
 

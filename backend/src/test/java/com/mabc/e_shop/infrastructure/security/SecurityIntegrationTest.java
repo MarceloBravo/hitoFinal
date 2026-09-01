@@ -3,12 +3,14 @@ package com.mabc.e_shop.infrastructure.security;
 import com.jayway.jsonpath.JsonPath;
 import com.mabc.e_shop.infrastructure.persistence.entity.User;
 import com.mabc.e_shop.infrastructure.persistence.repositories.UserJpaRepository;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -138,15 +140,12 @@ class SecurityIntegrationTest {
         String token = loginAccessToken(ADMIN_EMAIL);
 
         mockMvc.perform(post("/api/v1/auth/refresh")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {"refreshToken": "%s"}
-                                """.formatted(token)))
+                        .cookie(new Cookie(JwtCookieManager.REFRESH_COOKIE, token)))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    @DisplayName("Flujo completo: register, usar token, refresh y logout")
+    @DisplayName("Flujo completo: register, usar token, refresh por cookie y logout")
     void fullAuthFlow() throws Exception {
         MvcResult register = mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -154,9 +153,9 @@ class SecurityIntegrationTest {
                                 {"name": "Nuevo", "email": "nuevo@tienda.cl", "password": "secreta123"}
                                 """))
                 .andExpect(status().isCreated())
+                .andExpect(result -> result.getResponse().containsHeader(HttpHeaders.SET_COOKIE))
                 .andReturn();
         String access = JsonPath.read(register.getResponse().getContentAsString(StandardCharsets.UTF_8), "$.data.accessToken");
-        String refresh = JsonPath.read(register.getResponse().getContentAsString(StandardCharsets.UTF_8), "$.data.refreshToken");
 
         mockMvc.perform(post("/api/v1/categories")
                         .header("Authorization", "Bearer " + access)
@@ -167,10 +166,7 @@ class SecurityIntegrationTest {
                 .andExpect(status().isForbidden());
 
         MvcResult refreshResult = mockMvc.perform(post("/api/v1/auth/refresh")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {"refreshToken": "%s"}
-                                """.formatted(refresh)))
+                        .cookie(refreshCookieFrom(register)))
                 .andExpect(status().isOk())
                 .andReturn();
         String newAccess = JsonPath.read(refreshResult.getResponse().getContentAsString(StandardCharsets.UTF_8), "$.data.accessToken");
@@ -194,6 +190,13 @@ class SecurityIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data", hasSize(2)))
                 .andExpect(jsonPath("$.data[0].password").doesNotExist());
+    }
+
+    private Cookie refreshCookieFrom(MvcResult result) {
+        String setCookie = result.getResponse().getHeader(HttpHeaders.SET_COOKIE);
+        String nameValue = setCookie.split(";")[0];
+        int separator = nameValue.indexOf('=');
+        return new Cookie(nameValue.substring(0, separator), nameValue.substring(separator + 1));
     }
 
     private String loginAccessToken(String email) throws Exception {

@@ -88,7 +88,8 @@ export class NavBar extends HTMLElement {
         const fallbackItems: Links[] = [
             { title: 'Inicio', href: '#' },
             { title: 'Ofertas', href: '#' },
-            { title: 'Contacto', href: '#' }
+            { title: 'Contacto', href: '#' },
+            { title: 'Administración', href: '#' }
         ];
 
         if (!linksAttr) {

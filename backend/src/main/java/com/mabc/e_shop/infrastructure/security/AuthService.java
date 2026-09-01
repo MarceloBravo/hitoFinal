@@ -3,7 +3,6 @@ package com.mabc.e_shop.infrastructure.security;
 import com.mabc.e_shop.infrastructure.http.dto.UserResponseDto;
 import com.mabc.e_shop.infrastructure.http.dto.auth.AuthResponseDto;
 import com.mabc.e_shop.infrastructure.http.dto.auth.LoginRequestDto;
-import com.mabc.e_shop.infrastructure.http.dto.auth.RefreshTokenRequestDto;
 import com.mabc.e_shop.infrastructure.http.dto.auth.RegisterRequestDto;
 import com.mabc.e_shop.infrastructure.persistence.entity.User;
 import com.mabc.e_shop.infrastructure.persistence.repositories.UserJpaRepository;
@@ -99,24 +98,23 @@ public class AuthService {
     }
 
     /**
-     * Renueva la sesión validando el refresh token y emitiendo un par nuevo
-     * de tokens (flujo stateless, sin persistencia).
+     * Renueva la sesión validando el refresh token (entregado en la cookie
+     * {@code HttpOnly}) y emitiendo un par nuevo de tokens (flujo stateless).
      *
-     * @param request refresh token vigente.
+     * @param refreshToken refresh token vigente, o {@code null} si no hay cookie.
      * @return nuevos tokens de sesión del usuario.
      * @throws BadCredentialsException si el token no es de refresco o no es válido (401).
      */
-    public AuthResponseDto refresh(RefreshTokenRequestDto request) {
-        String token = request.refreshToken();
-        if (!REFRESH_TOKEN_TYPE.equals(jwtService.extractTokenType(token))) {
+    public AuthResponseDto refresh(String refreshToken) {
+        if (refreshToken == null || !REFRESH_TOKEN_TYPE.equals(jwtService.extractTokenType(refreshToken))) {
             throw new BadCredentialsException("Refresh token inválido.");
         }
-        String email = jwtService.extractEmail(token);
+        String email = jwtService.extractEmail(refreshToken);
         if (email == null) {
             throw new BadCredentialsException("Refresh token inválido.");
         }
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-        if (!jwtService.isTokenValid(token, userDetails)) {
+        if (!jwtService.isTokenValid(refreshToken, userDetails)) {
             throw new BadCredentialsException("Refresh token inválido o expirado.");
         }
         return buildAuthResponse(findByEmail(email));

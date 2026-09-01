@@ -30,6 +30,7 @@ jwt:
     expiration: ${JWT_ACCESS_EXPIRATION:900000}
   refresh-token:
     expiration: ${JWT_REFRESH_EXPIRATION:604800000}
+  cookie-secure: ${JWT_COOKIE_SECURE:false}
 
 # Aislamiento hermético: la documentación queda bloqueada por defecto.
 # Solo el perfil "dev" habilita Swagger-UI y OpenAPI (application-dev.yml).
