@@ -77,9 +77,15 @@ public class Cart {
      * Agrega un producto al carrito con la cantidad indicada y recalcula el
      * subtotal.
      *
+     * <p>
+     * Si el producto ya está presente en el carrito, se <b>suma</b> la cantidad
+     * al ítem existente en lugar de crear uno duplicado. En ambos casos se valida
+     * el stock contra la cantidad acumulada. Esta operación no descuenta el
+     * producto del stock; el descuento ocurre recién al concretar la compra.
+     *
      * @param product  producto a agregar; no puede ser {@code null}.
      * @param quantity cantidad de unidades a agregar; no puede ser {@code null}.
-     * @return el ítem de carrito creado.
+     * @return el ítem de carrito creado o actualizado.
      * @throws NullPointerException  si {@code product} o {@code quantity} son
      *                               {@code null}.
      * @throws IllegalStateException si no hay stock suficiente del producto.
@@ -87,6 +93,22 @@ public class Cart {
     public CartItem addItem(Product product, Quantity quantity) {
         Objects.requireNonNull(product, "El producto no puede ser nulo.");
         Objects.requireNonNull(quantity, "La cantidad no puede ser nula.");
+
+        // Si el producto ya está en el carrito, sumamos la cantidad al ítem existente.
+        CartItem existing = items.stream()
+                .filter(item -> Objects.equals(item.getProduct().getId(), product.getId()))
+                .findFirst()
+                .orElse(null);
+
+        if (existing != null) {
+            Quantity newQuantity = new Quantity(existing.getQuantity().value() + quantity.value());
+            if (!product.hasStock(newQuantity)) {
+                throw new IllegalStateException("Stock insuficiente para el producto " + product.getName().value());
+            }
+            existing.changeQuantity(newQuantity);
+            calculateSubTotal();
+            return existing;
+        }
 
         if (!product.hasStock(quantity)) {
             throw new IllegalStateException("Stock insuficiente para el producto " + product.getName().value());
@@ -144,6 +166,35 @@ public class Cart {
         boolean removed = items.removeIf(item -> Objects.equals(item.getId(), itemId));
         if (!removed) {
             throw new IllegalArgumentException("El ítem no existe en el carrito.");
+        }
+        calculateSubTotal();
+    }
+
+    /**
+     * Disminuye en una unidad la cantidad del ítem con el identificador
+     * entregado y recalcula el subtotal.
+     *
+     * <p>
+     * Si la cantidad del ítem es 1 (una sola unidad), el ítem se elimina del
+     * carrito. Esta operación no devuelve unidades al stock del producto: el
+     * stock solo se altera al concretar la compra.
+     *
+     * @param itemId identificador del ítem a disminuir; no puede ser {@code null}.
+     * @throws NullPointerException      si {@code itemId} es {@code null}.
+     * @throws IllegalArgumentException si el ítem no existe en el carrito.
+     */
+    public void decrementItemQuantity(Long itemId) {
+        Objects.requireNonNull(itemId, "El id del ítem no puede ser nulo.");
+
+        CartItem existing = items.stream()
+                .filter(item -> Objects.equals(item.getId(), itemId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("El ítem no existe en el carrito."));
+
+        if (existing.getQuantity().value() <= 1) {
+            items.remove(existing);
+        } else {
+            existing.changeQuantity(new Quantity(existing.getQuantity().value() - 1));
         }
         calculateSubTotal();
     }

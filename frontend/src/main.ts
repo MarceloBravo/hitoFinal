@@ -1,6 +1,7 @@
 import './pages';
 
 import { Router } from './router';
+import { CartStore } from './store/cartStore';
 
 // Mapa de rutas URL 
 const routes = {
@@ -25,4 +26,7 @@ document.addEventListener('click', (e: MouseEvent) => {
 
 // Renderizar la ruta inicial al cargar la aplicación
 router.handleRoute();
+
+// Inicializar el carrito del invitado (leer cookie → cargar/crear carrito)
+CartStore.init();
 

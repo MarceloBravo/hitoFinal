@@ -5,8 +5,10 @@ const PLACEHOLDER_IMAGE = import.meta.env.VITE_PLACEHOLDER_IMAGE;
 /**
  * Web Component que renderiza la tarjeta de un producto.
  *
- * Acepta los atributos `img`, `title`, `description` y `price` dentro
- * de su shadow DOM. Si no se entrega imagen, usa `VITE_PLACEHOLDER_IMAGE`.
+ * Acepta los atributos `img`, `title`, `description`, `price`, `product-id`
+ * y `stock` dentro de su shadow DOM. Si no se entrega imagen, usa
+ * `VITE_PLACEHOLDER_IMAGE`. Emite el evento `add-to-cart` (bubbles+composed)
+ * al pulsar el botón "Agregar al carrito".
  */
 export class ProductCard extends HTMLElement {
   constructor() {
@@ -22,7 +24,9 @@ export class ProductCard extends HTMLElement {
           'img', // Atributo para la imagen del producto
           'title', // Atributo para el título del producto
           'description', // Atributo para la descripción del producto
-          'price' // Atributo para el precio del producto
+          'price', // Atributo para el precio del producto
+          'product-id', // Atributo con el identificador del producto
+          'stock' // Atributo con el stock disponible del producto
       ];
   }
 
@@ -56,8 +60,23 @@ export class ProductCard extends HTMLElement {
       const title: string = this.getAttribute('title') || 'Producto desconocido';
       const description: string = this.getAttribute('description') || 'Descripción no disponible';
       const price: string = this.getAttribute('price') || '$0.00';
+      const productId: string | null = this.getAttribute('product-id');
+      const stock: string | null = this.getAttribute('stock');
       const render = new Render(root, img, title, description, price);
       render.render();
+
+      const addButton = root.querySelector<HTMLButtonElement>('.add-to-cart');
+      addButton?.addEventListener('click', () => {
+          const id = productId !== null && productId !== '' ? Number(productId) : undefined;
+          this.dispatchEvent(new CustomEvent('add-to-cart', {
+              detail: {
+                  productId: id,
+                  stock: stock !== null && stock !== '' ? Number(stock) : undefined,
+              },
+              bubbles: true,
+              composed: true,
+          }));
+      });
   }
 }
     

@@ -18,7 +18,13 @@ export class Render {
      * @param description Descripción del producto.
      * @param price       Precio del producto.
      */
-    constructor(root: ShadowRoot, img: string, title: string, description: string, price: string) {
+    constructor(
+        root: ShadowRoot,
+        img: string,
+        title: string,
+        description: string,
+        price: string
+    ) {
         this.root = root;
         this.img = img;
         this.title = title;
@@ -39,6 +45,7 @@ export class Render {
                 <h3>${this.title}</h3>
                 <p>${this.description}</p>
                 <span>$${this.price}</span>
+                <button class="add-to-cart" type="button">Agregar al carrito</button>
             </article>
          `;
 

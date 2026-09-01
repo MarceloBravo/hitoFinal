@@ -1,13 +1,16 @@
 package com.mabc.e_shop.infrastructure.http.controller;
 
 import com.mabc.e_shop.application.usecase.AddItemToCartUseCase;
+import com.mabc.e_shop.application.usecase.CheckoutCartUseCase;
 import com.mabc.e_shop.application.usecase.CreateCartUseCase;
+import com.mabc.e_shop.application.usecase.DecrementItemQuantityFromCartUseCase;
 import com.mabc.e_shop.application.usecase.DeleteCartUseCase;
 import com.mabc.e_shop.application.usecase.GetCartByIdUseCase;
 import com.mabc.e_shop.application.usecase.RemoveItemFromCartUseCase;
 import com.mabc.e_shop.domain.entity.Cart;
 import com.mabc.e_shop.infrastructure.http.dto.CartItemRequestDto;
 import com.mabc.e_shop.infrastructure.http.dto.CartResponseDto;
+import com.mabc.e_shop.infrastructure.http.dto.CheckoutResponseDto;
 import com.mabc.e_shop.infrastructure.http.mapper.CartHttpMapper;
 import com.mabc.e_shop.infrastructure.http.response.ApiResponse;
 import com.mabc.e_shop.infrastructure.http.response.ApiResponseFactory;
@@ -15,9 +18,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,6 +46,8 @@ public class CartController {
     private final GetCartByIdUseCase getCartByIdUseCase;
     private final DeleteCartUseCase deleteCartUseCase;
     private final RemoveItemFromCartUseCase removeItemFromCartUseCase;
+    private final DecrementItemQuantityFromCartUseCase decrementItemQuantityFromCartUseCase;
+    private final CheckoutCartUseCase checkoutCartUseCase;
 
     /**
      * Crea el controlador con los casos de uso de carritos.
@@ -49,19 +57,25 @@ public class CartController {
      * @param getCartByIdUseCase        caso de uso que consulta un carrito por id.
      * @param deleteCartUseCase         caso de uso que elimina un carrito por id.
      * @param removeItemFromCartUseCase caso de uso que elimina un ítem del carrito.
+     * @param decrementItemQuantityFromCartUseCase caso de uso que disminuye la cantidad de un ítem.
+     * @param checkoutCartUseCase       caso de uso que concreta una compra y rebaja el stock.
      */
     public CartController(
         CreateCartUseCase createCartUseCase,
         AddItemToCartUseCase addItemToCartUseCase,
         GetCartByIdUseCase getCartByIdUseCase,
         DeleteCartUseCase deleteCartUseCase,
-        RemoveItemFromCartUseCase removeItemFromCartUseCase
+        RemoveItemFromCartUseCase removeItemFromCartUseCase,
+        DecrementItemQuantityFromCartUseCase decrementItemQuantityFromCartUseCase,
+        CheckoutCartUseCase checkoutCartUseCase
     ) {
         this.createCartUseCase = createCartUseCase;
         this.addItemToCartUseCase = addItemToCartUseCase;
         this.getCartByIdUseCase = getCartByIdUseCase;
         this.deleteCartUseCase = deleteCartUseCase;
         this.removeItemFromCartUseCase = removeItemFromCartUseCase;
+        this.decrementItemQuantityFromCartUseCase = decrementItemQuantityFromCartUseCase;
+        this.checkoutCartUseCase = checkoutCartUseCase;
     }
 
     /**
@@ -178,5 +192,56 @@ public class CartController {
         Cart cart = removeItemFromCartUseCase.execute(cartId, itemId);
         return ResponseEntity.ok().body(ApiResponseFactory.updated(
                 "Producto eliminado del carrito correctamente.", CartHttpMapper.toResponse(cart)));
+    }
+
+    /**
+     * Disminuye en una unidad la cantidad de un ítem de un carrito.
+     *
+     * @param cartId identificador del carrito.
+     * @param itemId identificador del ítem a disminuir.
+     * @return la respuesta estándar con el carrito actualizado y estado HTTP 200.
+     */
+    @Operation(summary = "Disminuye la cantidad de un producto del carrito",
+            description = "Resta una unidad a la cantidad del ítem indicado; si llegaba a una sola unidad, lo elimina.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "200", description = "Cantidad disminuida correctamente."),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "404", description = "Carrito o ítem inexistente.")
+    })
+    @PatchMapping(value = "/{cartId}/items/{itemId}")
+    public ResponseEntity<ApiResponse<CartResponseDto>> decrementItem(
+        @PathVariable Long cartId,
+        @PathVariable Long itemId
+    ) {
+        Cart cart = decrementItemQuantityFromCartUseCase.execute(cartId, itemId);
+        return ResponseEntity.ok().body(ApiResponseFactory.updated(
+                "Cantidad del producto disminuida correctamente.", CartHttpMapper.toResponse(cart)));
+    }
+
+    /**
+     * Concreta una compra (checkout ficticio) de un carrito rebajando el stock.
+     *
+     * @param id identificador del carrito a concretar.
+     * @return la respuesta estándar con el resumen de la compra y estado HTTP 200.
+     */
+    @Operation(summary = "Concreta la compra de un carrito",
+            description = "Rebaja el stock de los productos del carrito en las cantidades compradas y elimina el carrito.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "200", description = "Compra concretada correctamente."),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "404", description = "Carrito o producto inexistente."),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "409", description = "Stock insuficiente para algún producto.")
+    })
+    @PostMapping("/{id}/checkout")
+    @Transactional
+    public ResponseEntity<ApiResponse<CheckoutResponseDto>> checkout(@PathVariable Long id) {
+        CheckoutCartUseCase.CheckoutResult result = checkoutCartUseCase.execute(id);
+        CheckoutResponseDto dto = new CheckoutResponseDto(
+                result.cartId(), result.total(), result.itemCount(), result.products());
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseFactory.created(
+                "Compra concretada correctamente.", dto));
     }
 }

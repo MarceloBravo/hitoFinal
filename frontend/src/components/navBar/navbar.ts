@@ -1,5 +1,6 @@
 import type { Links } from '../../interfaces/links';
 import { Render } from './render';
+import { CartStore, CART_OPEN_EVENT, CART_UPDATED_EVENT } from '../../store/cartStore';
 
 /**
  * Componente personalizado para la barra de navegación del e-commerce.
@@ -29,7 +30,41 @@ export class NavBar extends HTMLElement {
      */
     connectedCallback() {
         this.render();
+        window.addEventListener(CART_UPDATED_EVENT, this.updateCartBadge);
+        this.shadowRoot?.addEventListener('click', this.handleCartClick);
     }
+
+    /**
+     * Se ejecuta cuando el componente se retira del DOM.
+     */
+    disconnectedCallback() {
+        window.removeEventListener(CART_UPDATED_EVENT, this.updateCartBadge);
+        this.shadowRoot?.removeEventListener('click', this.handleCartClick);
+    }
+
+    /**
+     * Actualiza el conteo del botón del carrito con el total de unidades.
+     */
+    private updateCartBadge = (): void => {
+        const badge = this.shadowRoot?.querySelector<HTMLButtonElement>('.cart-btn');
+        if (badge) {
+            badge.textContent = `🛒 ${CartStore.getItemCount()}`;
+        }
+    };
+
+    /**
+     * Abre el drawer al pulsar el botón del carrito.
+     */
+    private handleCartClick = (event: Event): void => {
+        const target = event.target as HTMLElement;
+        if (target.closest('.cart-btn')) {
+            window.dispatchEvent(new CustomEvent(CART_OPEN_EVENT, {
+                detail: {},
+                bubbles: true,
+                composed: true,
+            }));
+        }
+    };
 
     /**
      * Re-renderiza el componente cuando cambian sus atributos observados.

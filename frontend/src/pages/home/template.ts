@@ -63,6 +63,8 @@ export class Template{
                 }
                 return this.productsData.products.map((product) => `
                     <product-card
+                        product-id="${product.id}"
+                        stock="${product.stock}"
                         img="${import.meta.env.VITE_IMAGE_URL}${product.imagePath}"
                         title="${product.name}"
                         description="${product.description}"

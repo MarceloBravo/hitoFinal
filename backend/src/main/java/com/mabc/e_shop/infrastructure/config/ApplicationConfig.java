@@ -1,8 +1,10 @@
 package com.mabc.e_shop.infrastructure.config;
 
 import com.mabc.e_shop.application.usecase.AddItemToCartUseCase;
+import com.mabc.e_shop.application.usecase.CheckoutCartUseCase;
 import com.mabc.e_shop.application.usecase.CreateCartUseCase;
 import com.mabc.e_shop.application.usecase.CreateProductUseCase;
+import com.mabc.e_shop.application.usecase.DecrementItemQuantityFromCartUseCase;
 import com.mabc.e_shop.application.usecase.DeleteCartUseCase;
 import com.mabc.e_shop.application.usecase.DeleteCategoryUseCase;
 import com.mabc.e_shop.application.usecase.DeleteProductUseCase;
@@ -126,6 +128,32 @@ public class ApplicationConfig {
     @Bean
     public RemoveItemFromCartUseCase removeItemFromCartUseCase(CartRepository cartRepository) {
         return new RemoveItemFromCartUseCase(cartRepository);
+    }
+
+    /**
+     * Crea el caso de uso que disminuye en una unidad la cantidad de un ítem.
+     *
+     * @param cartRepository repositorio de carritos de compras.
+     * @return el caso de uso configurado.
+     */
+    @Bean
+    public DecrementItemQuantityFromCartUseCase decrementItemQuantityFromCartUseCase(CartRepository cartRepository) {
+        return new DecrementItemQuantityFromCartUseCase(cartRepository);
+    }
+
+    /**
+     * Crea el caso de uso que concreta una compra y rebaja el stock.
+     *
+     * @param cartRepository    repositorio de carritos de compras.
+     * @param productRepository repositorio de productos.
+     * @return el caso de uso configurado.
+     */
+    @Bean
+    public CheckoutCartUseCase checkoutCartUseCase(
+        CartRepository cartRepository,
+        ProductRepository productRepository
+    ) {
+        return new CheckoutCartUseCase(cartRepository, productRepository);
     }
 
     /**

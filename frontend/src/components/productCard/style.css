@@ -50,6 +50,28 @@
   flex-shrink: 0;
 }
 
+.add-to-cart {
+  margin-top: 0.75rem;
+  padding: 0.55rem 1rem;
+  border: none;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.add-to-cart:hover {
+  background: #1d4ed8;
+}
+
+.add-to-cart:active {
+  background: #1e40af;
+}
+
 @media (max-width: 600px) {
   .product-card {
     width: 100%;

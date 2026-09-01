@@ -1,6 +1,7 @@
 import { ProductService } from '../../services/productService';
 import { categoriesService } from '../../services/categoriesService';
 import { marksService } from '../../services/marksService';
+import { CartStore } from '../../store/cartStore';
 import type { ResponseInterface } from '../../interfaces/responseInterface';
 import type { ProductResponseApi } from '../../interfaces/productResponseApi';
 import type { CategoriesResponseApi } from '../../interfaces/categoriesResponseApi';
@@ -18,6 +19,11 @@ interface FilterEventDetail {
     value?: string;
     priceMin?: number;
     priceMax?: number;
+}
+
+interface AddToCartDetail {
+    productId?: number;
+    stock?: number;
 }
 
 
@@ -214,6 +220,16 @@ export class HomePage extends HTMLElement {
             aside.addEventListener('filter-change', (event) => {
                 const detail = (event as CustomEvent<FilterEventDetail>).detail;
                 this.applyFilter(detail);
+            });
+        });
+
+        const cards = this.querySelectorAll('product-card');
+        cards.forEach((card) => {
+            card.addEventListener('add-to-cart', (event) => {
+                const detail = (event as CustomEvent<AddToCartDetail>).detail;
+                if (detail.productId !== undefined) {
+                    void CartStore.addItem(detail.productId);
+                }
             });
         });
     }

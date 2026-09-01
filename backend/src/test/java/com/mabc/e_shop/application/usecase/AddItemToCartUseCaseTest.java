@@ -25,6 +25,7 @@ import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -81,5 +82,26 @@ class AddItemToCartUseCaseTest {
     void rejectsWhenStockInsufficient() {
         assertThrows(IllegalStateException.class, () -> useCase.execute(1L, 1L, 50));
         verify(cartRepository, never()).save(any(Cart.class));
+    }
+
+    @Test
+    @DisplayName("Agregar el mismo producto dos veces suma la cantidad en un unico item")
+    void addsSameProductTwiceSumsQuantity() {
+        useCase.execute(1L, 1L, 2);
+        Cart result = useCase.execute(1L, 1L, 3);
+
+        assertEquals(1, result.getItems().size());
+        assertEquals(5, result.getItems().get(0).getQuantity().value());
+        assertEquals(4000000, result.getSubTotal());
+        verify(cartRepository, times(2)).save(any(Cart.class));
+    }
+
+    @Test
+    @DisplayName("Rechaza si la cantidad acumulada supera el stock y no guarda cambios")
+    void rejectsWhenAccumulatedQuantityExceedsStock() {
+        useCase.execute(1L, 1L, 10);
+
+        assertThrows(IllegalStateException.class, () -> useCase.execute(1L, 1L, 3));
+        verify(cartRepository, times(1)).save(any(Cart.class));
     }
 }

@@ -1,7 +1,9 @@
 package com.mabc.e_shop.infrastructure.http.controller;
 
 import com.mabc.e_shop.application.usecase.AddItemToCartUseCase;
+import com.mabc.e_shop.application.usecase.CheckoutCartUseCase;
 import com.mabc.e_shop.application.usecase.CreateCartUseCase;
+import com.mabc.e_shop.application.usecase.DecrementItemQuantityFromCartUseCase;
 import com.mabc.e_shop.application.usecase.DeleteCartUseCase;
 import com.mabc.e_shop.application.usecase.GetCartByIdUseCase;
 import com.mabc.e_shop.application.usecase.RemoveItemFromCartUseCase;
@@ -24,11 +26,14 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
+
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -53,6 +58,12 @@ class CartControllerTest {
 
     @MockitoBean
     private RemoveItemFromCartUseCase removeItemFromCartUseCase;
+
+    @MockitoBean
+    private DecrementItemQuantityFromCartUseCase decrementItemQuantityFromCartUseCase;
+
+    @MockitoBean
+    private CheckoutCartUseCase checkoutCartUseCase;
 
     @Test
     @DisplayName("GET busca un carrito por id y responde 200 con el formato estándar")
@@ -216,5 +227,75 @@ class CartControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.statusCode").value(404))
                 .andExpect(jsonPath("$.message").value("El ítem no existe en el carrito."));
+    }
+
+    @Test
+    @DisplayName("PATCH disminuye la cantidad de un item y responde 200 con subtotal actualizado")
+    void decrementsItemQuantity() throws Exception {
+        Cart cart = new Cart(7L);
+        cart.addItem(buildProduct(), new Quantity(1));
+        when(decrementItemQuantityFromCartUseCase.execute(7L, 10L)).thenReturn(cart);
+
+        mockMvc.perform(patch("/api/v1/carts/7/items/10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.statusCode").value(200))
+                .andExpect(jsonPath("$.message").value("Cantidad del producto disminuida correctamente."))
+                .andExpect(jsonPath("$.data.id").value(7))
+                .andExpect(jsonPath("$.data.items.length()").value(1))
+                .andExpect(jsonPath("$.data.subTotal").value(50.0));
+    }
+
+    @Test
+    @DisplayName("PATCH de un item inexistente en el carrito responde 404")
+    void rejectsMissingItemOnPatchAs404() throws Exception {
+        when(decrementItemQuantityFromCartUseCase.execute(7L, 99L))
+                .thenThrow(new com.mabc.e_shop.domain.exception.ResourceNotFoundException("El ítem no existe en el carrito."));
+
+        mockMvc.perform(patch("/api/v1/carts/7/items/99"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.statusCode").value(404))
+                .andExpect(jsonPath("$.message").value("El ítem no existe en el carrito."));
+    }
+
+    @Test
+    @DisplayName("POST checkout concreta la compra y responde 201 con el resumen")
+    void checksOutCart() throws Exception {
+        CheckoutCartUseCase.CheckoutResult result =
+                new CheckoutCartUseCase.CheckoutResult(7L, 1500.0, 3, List.of(3L));
+        when(checkoutCartUseCase.execute(7L)).thenReturn(result);
+
+        mockMvc.perform(post("/api/v1/carts/7/checkout"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.statusCode").value(201))
+                .andExpect(jsonPath("$.message").value("Compra concretada correctamente."))
+                .andExpect(jsonPath("$.data.cartId").value(7))
+                .andExpect(jsonPath("$.data.total").value(1500.0))
+                .andExpect(jsonPath("$.data.itemCount").value(3))
+                .andExpect(jsonPath("$.data.products[0]").value(3));
+    }
+
+    @Test
+    @DisplayName("POST checkout de un carrito inexistente responde 404")
+    void rejectsMissingCartOnCheckoutAs404() throws Exception {
+        when(checkoutCartUseCase.execute(99L))
+                .thenThrow(new com.mabc.e_shop.domain.exception.ResourceNotFoundException("El carrito no existe o no es válido."));
+
+        mockMvc.perform(post("/api/v1/carts/99/checkout"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.statusCode").value(404))
+                .andExpect(jsonPath("$.message").value("El carrito no existe o no es válido."));
+    }
+
+    @Test
+    @DisplayName("POST checkout con stock insuficiente responde 409")
+    void rejectsStockInsufficientOnCheckoutAs409() throws Exception {
+        when(checkoutCartUseCase.execute(7L))
+                .thenThrow(new IllegalStateException("Stock insuficiente para el producto Notebook"));
+
+        mockMvc.perform(post("/api/v1/carts/7/checkout"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.statusCode").value(409))
+                .andExpect(jsonPath("$.message", containsString("Stock insuficiente")))
+                .andExpect(jsonPath("$.data").doesNotExist());
     }
 }

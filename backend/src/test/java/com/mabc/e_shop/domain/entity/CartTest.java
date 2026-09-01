@@ -58,6 +58,28 @@ class CartTest {
     }
 
     @Test
+    @DisplayName("addItem: si el producto ya existe suma la cantidad sin duplicar el item")
+    void addItemSumsQuantityWhenProductAlreadyExists() {
+        cart.addItem(product, new Quantity(2));
+        CartItem updated = cart.addItem(product, new Quantity(3));
+
+        assertEquals(1, cart.getItems().size());
+        assertEquals(5, updated.getQuantity().value());
+        assertEquals(5, cart.getItems().get(0).getQuantity().value());
+        assertEquals(4000000, cart.getSubTotal());
+    }
+
+    @Test
+    @DisplayName("addItem: valida el stock contra la cantidad acumulada")
+    void addItemValidatesStockAgainstAccumulatedQuantity() {
+        cart.addItem(product, new Quantity(10));
+
+        assertThrows(IllegalStateException.class, () -> cart.addItem(product, new Quantity(5)));
+        assertEquals(1, cart.getItems().size());
+        assertEquals(10, cart.getItems().get(0).getQuantity().value());
+    }
+
+    @Test
     @DisplayName("addItem: rechaza producto nulo")
     void addItemRejectsNullProduct() {
         assertThrows(NullPointerException.class, () -> cart.addItem(null, new Quantity(1)));
@@ -131,5 +153,43 @@ class CartTest {
     @DisplayName("removeItemById: rechaza id nulo")
     void removeItemByIdRejectsNullId() {
         assertThrows(NullPointerException.class, () -> cart.removeItemById(null));
+    }
+
+    @Test
+    @DisplayName("decrementItemQuantity: disminuye en una unidad y recalcula el subtotal")
+    void decrementItemQuantityDecreasesByOne() {
+        cart.addItemWithId(10L, product, new Quantity(3));
+
+        cart.decrementItemQuantity(10L);
+
+        assertEquals(1, cart.getItems().size());
+        assertEquals(2, cart.getItems().get(0).getQuantity().value());
+        assertEquals(1600000, cart.getSubTotal());
+    }
+
+    @Test
+    @DisplayName("decrementItemQuantity: elimina el item si la cantidad llegaba a uno")
+    void decrementItemQuantityRemovesLastUnit() {
+        cart.addItemWithId(10L, product, new Quantity(1));
+
+        cart.decrementItemQuantity(10L);
+
+        assertTrue(cart.getItems().isEmpty());
+        assertEquals(0.0, cart.getSubTotal());
+    }
+
+    @Test
+    @DisplayName("decrementItemQuantity: lanza excepcion si el item no existe")
+    void decrementItemQuantityRejectsMissingItem() {
+        cart.addItemWithId(10L, product, new Quantity(2));
+
+        assertThrows(IllegalArgumentException.class, () -> cart.decrementItemQuantity(99L));
+        assertEquals(1, cart.getItems().size());
+    }
+
+    @Test
+    @DisplayName("decrementItemQuantity: rechaza id nulo")
+    void decrementItemQuantityRejectsNullId() {
+        assertThrows(NullPointerException.class, () -> cart.decrementItemQuantity(null));
     }
 }
