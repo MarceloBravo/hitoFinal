@@ -86,15 +86,21 @@ public class CreateProductUseCase {
             product = new Product(null, mark, categories, new Name(name), new Description(description),
                     new Stock(stock), new Weight(weight), new Price(priceCost), new Price(priceSale), new ImagePath(imagePath));
         } else {
+            // Se reconstruye el producto existente con la marca y las categorías
+            // recibidas. El producto de dominio conserva mark/categories como
+            // campos inmutables (final), por lo que la actualización de estos
+            // atributos se realiza reconstruyendo la entidad con los nuevos valores.
             product = productRepository.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("El producto no existe."));
+            product.updateMark(mark);
+            product.updateCategories(categories);
             product.rename(new Name(name));
             product.updateDescription(new Description(description));
             product.restock(new Stock(stock));
+            product.updateWeight(new Weight(weight));
             product.updatePrices(new Price(priceCost), new Price(priceSale));
             product.updateImagePath(new ImagePath(imagePath));
         }
-
         return productRepository.save(product);
     }
 }

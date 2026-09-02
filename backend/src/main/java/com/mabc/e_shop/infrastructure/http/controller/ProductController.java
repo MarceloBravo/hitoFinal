@@ -16,6 +16,7 @@ import com.mabc.e_shop.infrastructure.http.response.ApiResponseFactory;
 import com.mabc.e_shop.infrastructure.storage.ImageStorage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
@@ -176,6 +177,7 @@ public class ProductController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "404", description = "Marca o categoría inexistente.")
     })
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<ProductResponseDto>> create(
         @Valid @ModelAttribute ProductRequestDto request
@@ -226,6 +228,7 @@ public class ProductController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "404", description = "Producto, marca o categoría inexistente.")
     })
+    @SecurityRequirement(name = "bearerAuth")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<ProductResponseDto>> update(
         @PathVariable Long id,
@@ -281,6 +284,7 @@ public class ProductController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "404", description = "Producto inexistente.")
     })
+    @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<ApiResponse<ProductResponseDto>> delete(
         @PathVariable Long id

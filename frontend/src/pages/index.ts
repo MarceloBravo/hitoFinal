@@ -8,3 +8,5 @@ export { MarksList } from './marks/list';
 export { MarksForm } from './marks/form';
 export { CategoriesList } from './categories/list';
 export { CategoriesForm } from './categories/form';
+export { ProductsList } from './products/list';
+export { ProductsForm } from './products/form';

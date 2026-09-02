@@ -59,8 +59,14 @@ export class Router {
     const currentPath = window.location.pathname;
     const tagName = this.resolveRoute(currentPath);
 
-    // Limpia el contenedor e inyecta la etiqueta HTML del nuevo Web Component
-    this.appOutlet.innerHTML = `<${tagName}></${tagName}>`;
+    // Vacía el contenedor y crea el Web Component por documento.
+    // Al crear el nodo con createElement se garantiza que el
+    // connectedCallback se dispare en CADA navegación, de modo que
+    // las páginas recalculan su estado (p. ej. el id de edición) y no
+    // queda un componente "viejo" en memoria tras volver a una misma ruta.
+    this.appOutlet.innerHTML = '';
+    const element = document.createElement(tagName);
+    this.appOutlet.appendChild(element);
   }
 
   /**

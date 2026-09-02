@@ -24,8 +24,8 @@ import java.util.Objects;
 public class Product {
 
     private final Long id;
-    private final Mark mark;
-    private final List<Category> categories;
+    private Mark mark;
+    private List<Category> categories;
     private Name name;
     private Description description;
     private Stock stock;
@@ -230,5 +230,17 @@ public class Product {
      */
     public void updateImagePath(ImagePath newImage){
         this.imagePath = newImage;
+    }
+
+    public void updateWeight(Weight newWeight){
+        this.weight = Objects.requireNonNull(newWeight, "El nuevo peso del producto no puede ser nulo.");
+    }
+
+    public void updateMark(Mark newMark){
+        this.mark = Objects.requireNonNull(newMark, "La nueva marca del producto no puede ser nula.");
+    }
+
+    public void updateCategories(List<Category> newCategories){
+        this.categories = newCategories == null ? new ArrayList<>() : new ArrayList<>(newCategories);
     }
 }

@@ -17,6 +17,9 @@ const routes = {
   '/admin_home/categories': 'categories-list-page',
   '/admin_home/categories/new': 'categories-form-page',
   '/admin_home/categories/edit/:id': 'categories-form-page',
+  '/admin_home/products': 'products-list-page',
+  '/admin_home/products/new': 'products-form-page',
+  '/admin_home/products/edit/:id': 'products-form-page',
   '/404': 'page-404' 
 };
 

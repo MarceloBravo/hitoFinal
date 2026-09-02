@@ -119,11 +119,56 @@ class ProductTest {
         assertThrows(NullPointerException.class, () -> product.restock(null));
         assertThrows(NullPointerException.class, () -> product.updatePrices(null, new Price(1)));
         assertThrows(NullPointerException.class, () -> product.updatePrices(new Price(1), null));
+        assertThrows(NullPointerException.class, () -> product.updateMark(null));
     }
 
     @Test
     @DisplayName("getCategories: devuelve una lista no modificable")
     void categoriesAreUnmodifiable() {
         assertThrows(UnsupportedOperationException.class, () -> product.getCategories().add(null));
+    }
+
+    @Test
+    @DisplayName("updateMark: actualiza la marca del producto")
+    void updateMarkUpdatesValue() {
+        Mark newMark = new Mark(2L, new Name("HP"));
+
+        product.updateMark(newMark);
+
+        assertEquals("HP", product.getMark().getName().value());
+        assertEquals(1L, product.getId());
+    }
+
+    @Test
+    @DisplayName("updateCategories: actualiza las categorias del producto")
+    void updateCategoriesUpdatesValue() {
+        Category cat1 = new Category(2L, new Name("Electronica"));
+        Category cat2 = new Category(3L, new Name("Oficina"));
+
+        product.updateCategories(List.of(cat1, cat2));
+
+        assertEquals(2, product.getCategories().size());
+        assertEquals("Electronica", product.getCategories().get(0).getName().value());
+        assertEquals("Oficina", product.getCategories().get(1).getName().value());
+    }
+
+    @Test
+    @DisplayName("updateCategories: acepta una lista nula (producto sin categorias)")
+    void updateCategoriesAcceptsNull() {
+        product.updateCategories(null);
+
+        assertTrue(product.getCategories().isEmpty());
+    }
+
+    @Test
+    @DisplayName("updateCategories: no expone la lista interna (inmutabilidad)")
+    void updateCategoriesDoesNotExposeInternalList() {
+        Category cat = new Category(2L, new Name("Electronica"));
+        List<Category> newCategories = new java.util.ArrayList<>(List.of(cat));
+
+        product.updateCategories(newCategories);
+        newCategories.clear();
+
+        assertEquals(1, product.getCategories().size());
     }
 }

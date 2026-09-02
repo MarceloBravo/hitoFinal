@@ -12,6 +12,7 @@ import com.mabc.e_shop.infrastructure.http.response.ApiResponse;
 import com.mabc.e_shop.infrastructure.http.response.ApiResponseFactory;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -117,6 +118,7 @@ public class CategoryController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "400", description = "Payload inválido o reglas de negocio violadas.")
     })
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping
     public ResponseEntity<ApiResponse<CategoryResponseDto>> create(
         @Valid @RequestBody CategoryRequestDto request
@@ -143,6 +145,7 @@ public class CategoryController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "404", description = "Categoría inexistente.")
     })
+    @SecurityRequirement(name = "bearerAuth")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CategoryResponseDto>> update(
         @PathVariable Long id,
@@ -169,6 +172,7 @@ public class CategoryController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "409", description = "Categoría en uso por algún producto.")
     })
+    @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<ApiResponse<CategoryResponseDto>> delete(
         @PathVariable Long id

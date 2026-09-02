@@ -54,8 +54,14 @@ class CreateProductUseCaseTest {
         mark = new Mark(1L, new Name("Lenovo"));
         category = new Category(1L, new Name("Computacion"));
 
+        Mark mark2 = new Mark(2L, new Name("Apple"));
+        Category category2 = new Category(2L, new Name("Gaming"));
+
         when(markRepository.findById(1L)).thenReturn(Optional.of(mark));
+        when(markRepository.findById(2L)).thenReturn(Optional.of(mark2));
         when(categoryRepository.findAllByIds(List.of(1L))).thenReturn(List.of(category));
+        when(categoryRepository.findAllByIds(List.of(2L))).thenReturn(List.of(category2));
+        when(categoryRepository.findAllByIds(List.of(1L, 2L))).thenReturn(List.of(category, category2));
 
         useCase = new CreateProductUseCase(productRepository, categoryRepository, markRepository);
     }
@@ -88,6 +94,22 @@ class CreateProductUseCaseTest {
         assertEquals("New", updated.getName().value());
         assertEquals(5, updated.getStock().value());
         assertEquals(900000, updated.getPriceSale().value());
+    }
+
+    @Test
+    @DisplayName("Actualiza la marca y categorias al modificar un producto existente")
+    void updatesMarkAndCategories() {
+        Product existing = useCase.execute(null, 1L, List.of(1L),
+                "Old", "Desc", 10, 1500, 650000, 800000,
+                "https://images.example.com/products/notebook.png");
+
+        Product updated = useCase.execute(existing.getId(), 2L, List.of(2L),
+                "Updated", "Desc2", 5, 1500, 700000, 900000,
+                "https://images.example.com/products/notebook.png");
+
+        assertEquals(existing.getId(), updated.getId());
+        assertEquals("Apple", updated.getMark().getName().value());
+        assertEquals("Gaming", updated.getCategories().get(0).getName().value());
     }
 
     @Test

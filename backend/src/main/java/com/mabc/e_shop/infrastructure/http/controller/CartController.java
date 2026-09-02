@@ -16,6 +16,7 @@ import com.mabc.e_shop.infrastructure.http.response.ApiResponse;
 import com.mabc.e_shop.infrastructure.http.response.ApiResponseFactory;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -111,6 +112,7 @@ public class CartController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "500", description = "Error interno del servidor.")
     })
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping
     public ResponseEntity<ApiResponse<CartResponseDto>> create() {
         Cart cart = createCartUseCase.execute();
@@ -137,6 +139,7 @@ public class CartController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "409", description = "Stock insuficiente para la cantidad solicitada.")
     })
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/{id}/items")
     public ResponseEntity<ApiResponse<CartResponseDto>> addItem(
         @PathVariable Long id,
@@ -161,6 +164,7 @@ public class CartController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "404", description = "Carrito inexistente.")
     })
+    @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<ApiResponse<CartResponseDto>> delete(
         @PathVariable Long id
@@ -184,6 +188,7 @@ public class CartController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "404", description = "Carrito o ítem inexistente.")
     })
+    @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping(value = "/{cartId}/items/{itemId}")
     public ResponseEntity<ApiResponse<CartResponseDto>> removeItem(
         @PathVariable Long cartId,
@@ -209,6 +214,7 @@ public class CartController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "404", description = "Carrito o ítem inexistente.")
     })
+    @SecurityRequirement(name = "bearerAuth")
     @PatchMapping(value = "/{cartId}/items/{itemId}")
     public ResponseEntity<ApiResponse<CartResponseDto>> decrementItem(
         @PathVariable Long cartId,
