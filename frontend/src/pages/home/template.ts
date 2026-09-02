@@ -19,7 +19,8 @@ export class Template{
     private productsData: ProductResponseApi | string;
     private activaPage: number = 1;
     private loadStatus: LoadStatus;
-    
+    private search: string = '';
+
     /**
      * @param root              Elemento anfitrión donde se renderiza la plantilla.
      * @param title             Título de la página.
@@ -29,8 +30,9 @@ export class Template{
      * @param productsData      Datos de productos o mensaje de error.
      * @param activaPage        Página activa actual.
      * @param loadStatus        Estado de carga de la interfaz.
+     * @param search            Término de búsqueda de texto vigente.
      */
-    constructor(root: HTMLElement, title: string, optionsCategories: string, optionsMarks: string, optionsPrices: string, productsData: ProductResponseApi | string, activaPage: number, loadStatus: LoadStatus){
+    constructor(root: HTMLElement, title: string, optionsCategories: string, optionsMarks: string, optionsPrices: string, productsData: ProductResponseApi | string, activaPage: number, loadStatus: LoadStatus, search: string = ''){
         this.root = root;
         this.title = title;
         this.optionsCategories = optionsCategories;
@@ -39,6 +41,7 @@ export class Template{
         this.productsData = productsData;
         this.activaPage = activaPage;
         this.loadStatus = loadStatus;
+        this.search = search;
     }
 
     /**
@@ -110,6 +113,9 @@ export class Template{
                 <main class="home-content-layout">
                     <aside class="home-filters-panel">
                         <h2>Filtros</h2>
+                        <div class="home-filters-search">
+                            <input type="search" id="product-search" class="home-search-input" placeholder="Buscar por nombre, marca o descripción..." value="${this.escapeAttr(this.search)}" aria-label="Buscar productos"/>
+                        </div>
                         <aside-section 
                             title="Categorias"
                             type="radio" 
@@ -160,5 +166,19 @@ export class Template{
         this.root.appendChild(style);
 
         return this.root;
+    }
+
+    /**
+     * Escapa caracteres especiales del HTML para evitar inyección en atributos.
+     *
+     * @param value Texto a escapar.
+     * @returns Texto seguro para insertar en un atributo HTML.
+     */
+    private escapeAttr(value: string): string {
+        return value
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
     }
 }

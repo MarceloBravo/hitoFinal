@@ -105,6 +105,27 @@ body {
   color: #111827;
 }
 
+.home-filters-search {
+  margin-bottom: 1rem;
+}
+
+.home-search-input {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-size: 0.9rem;
+  color: #1f2937;
+  background-color: #ffffff;
+}
+
+.home-search-input:focus {
+  outline: none;
+  border-color: #4338ca;
+  box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.12);
+}
+
 .home-products-section {
   display: flex;
   flex-direction: column;

@@ -12,4 +12,6 @@ export interface ProductFilters {
     minPrice?: number;
     /** Precio de venta máximo del rango seleccionado. */
     maxPrice?: number;
+    /** Término de búsqueda de texto (marca, nombre o descripción). */
+    search?: string;
 }

@@ -31,6 +31,8 @@ export class ProductService {
    * @param markId     Identificador de la marca para filtrar (opcional).
    * @param minPrice   Precio de venta mínimo para filtrar (opcional).
    * @param maxPrice   Precio de venta máximo para filtrar (opcional).
+   * @param search     Término de búsqueda de texto sobre nombre, descripción o
+   *                   nombre de la marca (opcional).
    * @returns Respuesta normalizada con los productos o el error ocurrido.
    */
   static getAll = async (
@@ -39,7 +41,8 @@ export class ProductService {
     categoryId?: number,
     markId?: number,
     minPrice?: number,
-    maxPrice?: number
+    maxPrice?: number,
+    search?: string
   ): Promise<ResponseInterface<ProductResponseApi>> => {
     try {
       const params = new URLSearchParams();
@@ -49,6 +52,7 @@ export class ProductService {
       if (markId !== undefined && markId !== null) params.set('markId', String(markId));
       if (minPrice !== undefined && minPrice !== null) params.set('minPrice', String(minPrice));
       if (maxPrice !== undefined && maxPrice !== null) params.set('maxPrice', String(maxPrice));
+      if (search !== undefined && search !== null && search.trim() !== '') params.set('search', search);
       const queryString: string = params.toString();
       const strURI: string = queryString ? `${URI}?${queryString}` : URI;
       return await apiClient<ProductResponseApi>(strURI);

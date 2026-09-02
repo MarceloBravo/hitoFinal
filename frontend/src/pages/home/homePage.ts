@@ -43,6 +43,9 @@ export class HomePage extends HTMLElement {
 
     private filters: ProductFilters;
 
+    /** Temporizador del debounce de la búsqueda por texto (3 segundos). */
+    private searchTimer: number | null = null;
+
     /**
      * Atributos observados para reaccionar a cambios en el DOM.
      */
@@ -132,7 +135,7 @@ export class HomePage extends HTMLElement {
      */
     loadData = async (limit: number = 12, page: number = 1, filters: ProductFilters = {}) => {
         const products: ResponseInterface<ProductResponseApi> = await ProductService.getAll(
-            limit, page, filters.categoryId, filters.markId, filters.minPrice, filters.maxPrice
+            limit, page, filters.categoryId, filters.markId, filters.minPrice, filters.maxPrice, filters.search
         );
         const categories: ResponseInterface<CategoriesResponseApi> = await categoriesService.getAll();
         const marks: ResponseInterface<MarksResponseApi> = await marksService.getAll();
@@ -188,6 +191,43 @@ export class HomePage extends HTMLElement {
     }
 
     /**
+     * Programa la búsqueda por texto con un retraso de 3 segundos tras el
+     * último carácter ingresado. Si ya hay un temporizador pendiente se
+     * reinicia para no ejecutar la búsqueda mientras el usuario sigue
+     * escribiendo.
+     */
+    private scheduleSearch(): void {
+        if (this.searchTimer !== null) {
+            window.clearTimeout(this.searchTimer);
+        }
+        this.searchTimer = window.setTimeout(() => {
+            this.searchTimer = null;
+            const input = this.querySelector<HTMLInputElement>('#product-search');
+            if (input) {
+                this.runSearch(input);
+            }
+        }, 3000);
+    }
+
+    /**
+     * Aplica el término de búsqueda actual al filtro y re-renderiza el
+     * catálogo desde la primera página. Se ejecuta al presionar Enter, al
+     * salir del campo o tras 3 segundos sin escribir.
+     *
+     * @param input Campo de búsqueda del cual se lee el valor.
+     */
+    private runSearch(input: HTMLInputElement): void {
+        if (this.searchTimer !== null) {
+            window.clearTimeout(this.searchTimer);
+            this.searchTimer = null;
+        }
+        const term = input.value.trim();
+        this.filters.search = term === '' ? undefined : term;
+        this.persistFilters();
+        this.render(1);
+    }
+
+    /**
      * Genera la página de inicio de forma asíncrona.
      *
      * Muestra un spinner mientras carga los datos, renderiza la plantilla,
@@ -206,7 +246,7 @@ export class HomePage extends HTMLElement {
         const { optionsCategories, optionsMarks, optionsPrices, productsData } = await this.loadData(LIMIT, page, this.filters);
         const loadStatus = typeof productsData === 'string' ? LoadStatus.ERROR : LoadStatus.SUCCESS;
 
-        const template = new Template(this, title, optionsCategories, optionsMarks, optionsPrices, productsData, page, loadStatus);
+        const template = new Template(this, title, optionsCategories, optionsMarks, optionsPrices, productsData, page, loadStatus, this.filters.search ?? '');
         template.render();
 
         const pagination = this.querySelector('pagination-nav');
@@ -222,6 +262,20 @@ export class HomePage extends HTMLElement {
                 this.applyFilter(detail);
             });
         });
+
+        const searchInput = this.querySelector<HTMLInputElement>('#product-search');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', (event) => {
+                if (event.key === 'Enter') {
+                    this.runSearch(searchInput);
+                } else {
+                    this.scheduleSearch();
+                }
+            });
+            searchInput.addEventListener('blur', () => {
+                this.runSearch(searchInput);
+            });
+        }
 
         const cards = this.querySelectorAll('product-card');
         cards.forEach((card) => {
