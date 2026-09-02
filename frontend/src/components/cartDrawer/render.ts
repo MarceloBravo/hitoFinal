@@ -46,9 +46,16 @@ export class Render {
      * Construye el HTML del drawer, lo inserta en el shadow root
      * y adjunta los estilos del componente.
      *
+     * Si el estado de apertura cambió, el elemento se inserta en posición
+     * cerrada y la clase `open` se aplica en el frame siguiente; así el
+     * navegador pinta el estado inicial y la transición CSS anima la
+     * entrada desde la derecha. Si solo cambió el contenido (drawer ya
+     * abierto), se conserva la clase para no re-animar.
+     *
+     * @param animate Indica si debe aplicarse la transición de apertura.
      * @returns El shadow root con el contenido renderizado.
      */
-    render() {
+    render(animate = false) {
         const isEmpty = this.items.length === 0;
         const bodyHtml = isEmpty
             ? `<p class="empty-msg">${this.ready ? 'Tu carrito está vacío' : 'Cargando carrito…'}</p>`
@@ -78,9 +85,10 @@ export class Render {
                 </div>
             `;
 
+        const showOpen: boolean = this.open && !animate;
         const htmlString: string = `
-            <div class="drawer-overlay ${this.open ? 'open' : ''}" data-overlay></div>
-            <aside class="drawer-panel ${this.open ? 'open' : ''}">
+            <div class="drawer-overlay ${showOpen ? 'open' : ''}" data-overlay></div>
+            <aside class="drawer-panel ${showOpen ? 'open' : ''}">
                 <header class="drawer-header">
                     <h2>Tu carrito</h2>
                     <span class="drawer-count">${this.count} ${this.count === 1 ? 'artículo' : 'artículos'}</span>
@@ -98,6 +106,18 @@ export class Render {
         const style = document.createElement('style');
         style.textContent = styles;
         this.root.appendChild(style);
+
+        if (animate && this.open) {
+            // Se presiona el estado de entrada en el frame siguiente (doble
+            // requestAnimationFrame) para que el navegador pinte el panel en
+            // su posición de reposo antes de animarlo hacia su posición final.
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    this.root.querySelector('.drawer-panel')?.classList.add('open');
+                    this.root.querySelector('.drawer-overlay')?.classList.add('open');
+                });
+            });
+        }
 
         return this.root;
     }

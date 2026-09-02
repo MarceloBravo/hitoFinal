@@ -10,6 +10,7 @@ export class Render {
     title: string;
     slogan: string;
     items: Links[];
+    isAdmin: boolean = false;
 
     /**
      * @param root    Shadow root del componente donde se renderiza.
@@ -22,6 +23,7 @@ export class Render {
         this.title = title;
         this.slogan = slogan;
         this.items = items;
+        this.isAdmin = window.location.pathname.startsWith('/admin_home');
     }
 
     /**
@@ -44,7 +46,7 @@ export class Render {
                     <nav class="top-nav">
                     ${this.items.map(({ title, href }) => `<a href="${href}" data-link>${title}</a>`).join('')}
                     </nav>
-                    <button class="cart-btn" type="button" aria-label="Carrito">🛒 0</button>
+                    ${this.isAdmin ? '<a class="close-btn" href="/" aria-label="Cerrar Sessión">Logout</a>' : '<button class="cart-btn" type="button" aria-label="Carrito">🛒 0</button>'}
                 </header>
                 `;
 

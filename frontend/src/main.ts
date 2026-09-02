@@ -20,10 +20,16 @@ const router = new Router(routes, 'router-outlet');
 
 // Interceptar los clics en enlaces con el atributo [data-link] para evitar el refresco
 document.addEventListener('click', (e: MouseEvent) => {
-  const target = (e.target as HTMLElement).closest('[data-link]');
-  if (target && target instanceof HTMLAnchorElement) {
+  // Se usa composedPath() porque los enlaces del menú viven en el shadow DOM
+  // del <nav-bar>: ahí el event.target se retargetea al host y closest() no
+  // alcanza el <a data-link> interior.
+  const link = e.composedPath().find(
+    (entry): entry is HTMLAnchorElement =>
+      entry instanceof HTMLAnchorElement && entry.hasAttribute('data-link'),
+  );
+  if (link) {
     e.preventDefault(); // Evita que el navegador haga un GET al servidor
-    router.navigate(target.pathname);
+    router.navigate(link.pathname);
   }
 });
 

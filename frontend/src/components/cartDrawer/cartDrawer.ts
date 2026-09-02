@@ -14,6 +14,13 @@ import type { CartItemResponseApi } from '../../interfaces/cartResponseApi';
 export class CartDrawer extends HTMLElement {
     private isOpen = false;
 
+    /**
+     * Estado de apertura del último render. Permite detectar cuándo cambia
+     * el estado para animar la entrada desde la derecha; si solo cambia el
+     * contenido del carrito (con el drawer ya abierto) no se re-anima.
+     */
+    private wasOpen = false;
+
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
@@ -126,8 +133,11 @@ export class CartDrawer extends HTMLElement {
         const count: number = CartStore.getItemCount();
         const ready: boolean = CartStore.isReady();
 
+        const openChanged: boolean = this.isOpen !== this.wasOpen;
+        this.wasOpen = this.isOpen;
+
         const render = new Render(root, items, subTotal, count, this.isOpen, ready);
-        render.render();
+        render.render(openChanged);
     }
 }
 

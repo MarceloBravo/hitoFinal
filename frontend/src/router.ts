@@ -2,6 +2,15 @@
 type RouteMap = Record<string, string>;
 
 /**
+ * Evento que se despacha en `window` tras cada navegación (pushState,
+ * botones atrás/adelante o navegación programática).
+ *
+ * Permite que componentes globales como el layout reaccionen al cambio de
+ * ruta sin recargar la página.
+ */
+export const ROUTE_CHANGED_EVENT = 'route-changed';
+
+/**
  * Enrutador SPA basado en la History API del navegador.
  *
  * Asocia cada ruta URL con la etiqueta de un Web Component y la inyecta
@@ -24,7 +33,10 @@ export class Router {
     this.appOutlet = document.getElementById(outletId)!;
 
     // Escuchar los botones de "Atrás / Adelante" del navegador
-    window.addEventListener('popstate', () => this.handleRoute());
+    window.addEventListener('popstate', () => {
+      this.handleRoute();
+      this.notifyRouteChanged();
+    });
   }
 
   /**
@@ -35,6 +47,7 @@ export class Router {
   public navigate(path: string): void {
     window.history.pushState({}, '', path);
     this.handleRoute();
+    this.notifyRouteChanged();
   }
 
   /**
@@ -48,5 +61,14 @@ export class Router {
 
     // Limpia el contenedor e inyecta la etiqueta HTML del nuevo Web Component
     this.appOutlet.innerHTML = `<${tagName}></${tagName}>`;
+  }
+
+  /**
+   * Notifica a los interesados (p. ej. el layout) que la ruta cambió.
+   */
+  private notifyRouteChanged(): void {
+    window.dispatchEvent(new CustomEvent(ROUTE_CHANGED_EVENT, {
+      detail: { path: window.location.pathname },
+    }));
   }
 }
