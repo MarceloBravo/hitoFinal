@@ -23,9 +23,10 @@ import jakarta.servlet.http.HttpServletResponse;
  *
  * <p>Define las reglas de acceso: los endpoints de lectura de productos,
  * categorías, marcas y todo el carrito son públicos para el frontoffice,
- * mientras que la escritura de productos, categorías y marcas queda
- * restringida a usuarios con rol {@code ADMIN}. La autenticación es
- * stateless mediante tokens JWT procesados por {@link JwtAuthenticationFilter}.
+ * mientras que la escritura de productos queda restringida a usuarios con
+ * rol {@code ADMIN}. Las escrituras de categorías y marcas requieren
+ * cualquier usuario autenticado. La autenticación es stateless mediante
+ * tokens JWT procesados por {@link JwtAuthenticationFilter}.
  */
 @Configuration
 @EnableWebSecurity
@@ -81,9 +82,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/products/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/v1/products/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/products/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/v1/categories/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/v1/categories/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/v1/categories/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/v1/categories/**").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/v1/categories/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/categories/**").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/v1/marks/**").authenticated()
                 .requestMatchers(HttpMethod.PUT, "/api/v1/marks/**").authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/marks/**").authenticated()

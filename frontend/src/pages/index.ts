@@ -6,3 +6,5 @@ export { AdminLogin } from './adminLogin';
 export { AdminHome } from './adminHome';
 export { MarksList } from './marks/list';
 export { MarksForm } from './marks/form';
+export { CategoriesList } from './categories/list';
+export { CategoriesForm } from './categories/form';

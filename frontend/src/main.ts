@@ -14,6 +14,9 @@ const routes = {
   '/admin_home/marks': 'marks-list-page',
   '/admin_home/marks/new': 'marks-form-page',
   '/admin_home/marks/edit/:id': 'marks-form-page',
+  '/admin_home/categories': 'categories-list-page',
+  '/admin_home/categories/new': 'categories-form-page',
+  '/admin_home/categories/edit/:id': 'categories-form-page',
   '/404': 'page-404' 
 };
 

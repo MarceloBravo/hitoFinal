@@ -86,8 +86,8 @@ class SecurityIntegrationTest {
     }
 
     @Test
-    @DisplayName("Crear categorías con rol USER responde 403")
-    void nonAdminCannotManageCatalog() throws Exception {
+    @DisplayName("Crear categorías con rol USER responde 201 (cualquier autenticado puede gestionar)")
+    void authenticatedUserCanManageCatalog() throws Exception {
         String token = loginAccessToken(CLIENT_EMAIL);
 
         mockMvc.perform(post("/api/v1/categories")
@@ -96,7 +96,8 @@ class SecurityIntegrationTest {
                         .content("""
                                 {"name": "Gaming", "active": true}
                                 """))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.statusCode").value(201));
     }
 
     @Test
@@ -169,7 +170,8 @@ class SecurityIntegrationTest {
                         .content("""
                                 {"name": "Gaming", "active": true}
                                 """))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.statusCode").value(201));
 
         MvcResult refreshResult = mockMvc.perform(post("/api/v1/auth/refresh")
                         .cookie(refreshCookieFrom(register)))
@@ -199,19 +201,22 @@ class SecurityIntegrationTest {
     }
 
     @Test
-    @DisplayName("Eliminar marcas exige rol ADMIN (401 anónimo, 403 USER, 200 admin)")
-    void deleteMarksRequiresAdmin() throws Exception {
+    @DisplayName("Eliminar marcas requiere autenticación (401 anónimo, 200 USER, 200 admin)")
+    void deleteMarksRequiresAuthentication() throws Exception {
         mockMvc.perform(delete("/api/v1/marks/999"))
                 .andExpect(status().isUnauthorized());
 
+        MarkEntity userMark = markRepository.save(new MarkEntity(null, "Xiaomi", true));
         String clientToken = loginAccessToken(CLIENT_EMAIL);
-        mockMvc.perform(delete("/api/v1/marks/999")
+        mockMvc.perform(delete("/api/v1/marks/" + userMark.getId())
                         .header("Authorization", "Bearer " + clientToken))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.statusCode").value(200))
+                .andExpect(jsonPath("$.message").value("Marca eliminada correctamente."));
 
-        MarkEntity seeded = markRepository.save(new MarkEntity(null, "Lenovo", true));
+        MarkEntity adminMark = markRepository.save(new MarkEntity(null, "Lenovo", true));
         String adminToken = loginAccessToken(ADMIN_EMAIL);
-        mockMvc.perform(delete("/api/v1/marks/" + seeded.getId())
+        mockMvc.perform(delete("/api/v1/marks/" + adminMark.getId())
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.statusCode").value(200))

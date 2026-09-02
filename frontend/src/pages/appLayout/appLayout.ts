@@ -22,9 +22,9 @@ export class AppLayout extends HTMLElement {
   ];
   backOfficeLinks: Links[] = [
     { title: 'Marcas', href: '/admin_home/marks' },
-    { title: 'Categorías', href: '404' },
-    { title: 'Productos', href: '404' },
-    { title: 'Usuarios', href: '404' },
+    { title: 'Categorías', href: '/admin_home/categories' },
+    { title: 'Productos', href: '/admin_home/products' },
+    { title: 'Usuarios', href: '/admin_home/users' },
   ];
 
   /** Referencia al `<nav-bar>` para actualizarlo sin recrear el layout. */
