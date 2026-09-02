@@ -32,14 +32,15 @@ const buildErrorResponse = (message: string, status = 500): ApiError => ({
 export const apiClient = async <T,>(endpoint: string, options: RequestInit = {}): Promise<ResponseInterface<T>> => {
   try {
     const url = `${BASE_URL}${endpoint}`;
+    const { headers, ...rest } = options;
 
     const response = await fetch(url, {
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        ...options.headers,
+        ...(headers as Record<string, string> | undefined),
       },
-      ...options,
+      ...rest,
     });
 
     if (!response.ok) {

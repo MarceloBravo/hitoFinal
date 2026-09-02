@@ -92,4 +92,12 @@ public interface ProductRepository {
      * @return {@code true} si algún producto referencia la categoría, {@code false} en caso contrario.
      */
     boolean existsProductWithCategory(Long categoryId);
+
+    /**
+     * Indica si existe al menos un producto asociado a la marca entregada.
+     *
+     * @param markId identificador de la marca.
+     * @return {@code true} si algún producto referencia la marca, {@code false} en caso contrario.
+     */
+    boolean existsProductWithMark(Long markId);
 }

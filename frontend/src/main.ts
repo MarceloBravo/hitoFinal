@@ -11,6 +11,9 @@ const routes = {
   '/contact': 'contact-page',
   '/admin_login': 'admin-login-page',
   '/admin_home': 'admin-home-page',
+  '/admin_home/marks': 'marks-list-page',
+  '/admin_home/marks/new': 'marks-form-page',
+  '/admin_home/marks/edit/:id': 'marks-form-page',
   '/404': 'page-404' 
 };
 

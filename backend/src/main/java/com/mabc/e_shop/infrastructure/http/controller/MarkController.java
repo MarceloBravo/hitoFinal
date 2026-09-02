@@ -1,5 +1,6 @@
 package com.mabc.e_shop.infrastructure.http.controller;
 
+import com.mabc.e_shop.application.usecase.DeleteMarkUseCase;
 import com.mabc.e_shop.application.usecase.GetAllMarksUseCase;
 import com.mabc.e_shop.application.usecase.GetMarkByIdUseCase;
 import com.mabc.e_shop.application.usecase.SaveMarkUseCase;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,6 +40,7 @@ public class MarkController {
     private final SaveMarkUseCase saveMarkUseCase;
     private final GetAllMarksUseCase getAllMarksUseCase;
     private final GetMarkByIdUseCase getMarkByIdUseCase;
+    private final DeleteMarkUseCase deleteMarkUseCase;
 
     /**
      * Crea el controlador con los casos de uso de marcas.
@@ -45,15 +48,18 @@ public class MarkController {
      * @param saveMarkUseCase    caso de uso que registra o actualiza marcas.
      * @param getAllMarksUseCase caso de uso que consulta todas las marcas.
      * @param getMarkByIdUseCase caso de uso que consulta una marca por id.
+     * @param deleteMarkUseCase  caso de uso que elimina una marca por id.
      */
     public MarkController(
         SaveMarkUseCase saveMarkUseCase,
         GetAllMarksUseCase getAllMarksUseCase,
-        GetMarkByIdUseCase getMarkByIdUseCase
+        GetMarkByIdUseCase getMarkByIdUseCase,
+        DeleteMarkUseCase deleteMarkUseCase
     ) {
         this.saveMarkUseCase = saveMarkUseCase;
         this.getAllMarksUseCase = getAllMarksUseCase;
         this.getMarkByIdUseCase = getMarkByIdUseCase;
+        this.deleteMarkUseCase = deleteMarkUseCase;
     }
 
     /**
@@ -143,5 +149,29 @@ public class MarkController {
         Mark mark = saveMarkUseCase.execute(id, request.name(), request.active());
         return ResponseEntity.ok()
                 .body(ApiResponseFactory.updated("Marca actualizada correctamente.", MarkHttpMapper.toResponse(mark)));
+    }
+
+    /**
+     * Elimina una marca existente.
+     *
+     * @param id identificador de la marca a eliminar.
+     * @return la respuesta estándar con estado HTTP 200.
+     */
+    @Operation(summary = "Elimina una marca existente",
+            description = "Elimina los datos de la marca correspondiente al id entregado.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "200", description = "Marca eliminada correctamente."),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "404", description = "Marca inexistente."),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "409", description = "Marca en uso por algún producto.")
+    })
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<ApiResponse<MarkResponseDto>> delete(
+        @PathVariable Long id
+    ) {
+        deleteMarkUseCase.execute(id);
+        return ResponseEntity.ok().body(ApiResponseFactory.deleted("Marca eliminada correctamente.", null));
     }
 }

@@ -21,7 +21,7 @@ export class AppLayout extends HTMLElement {
     { title: 'Administración', href: 'admin_login' },
   ];
   backOfficeLinks: Links[] = [
-    { title: 'Marcas', href: '404' },
+    { title: 'Marcas', href: '/admin_home/marks' },
     { title: 'Categorías', href: '404' },
     { title: 'Productos', href: '404' },
     { title: 'Usuarios', href: '404' },
@@ -49,7 +49,8 @@ export class AppLayout extends HTMLElement {
    * Indica si la ruta actual pertenece al BackOffice.
    *
    * Se evalúa sobre `pathname` en el momento en que se invoca, de modo que
-   * refleja siempre la URL vigente de la barra del navegador.
+   * refleja siempre la URL vigente de la barra del navegador. Agrupa el home
+   * del admin y todos los mantenedores que viven bajo `/admin_home`.
    *
    * @returns `true` si la URL apunta a la sección de administración.
    */

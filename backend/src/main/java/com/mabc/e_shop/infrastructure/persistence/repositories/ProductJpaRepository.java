@@ -24,6 +24,15 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long>
     long countProductsByCategoryId(@Param("categoryId") Long categoryId);
 
     /**
+     * Cuenta los productos asociados a la marca entregada.
+     *
+     * @param markId identificador de la marca.
+     * @return cantidad de productos que referencian la marca.
+     */
+    @Query("select count(p) from ProductEntity p where p.mark.id = :markId")
+    long countProductsByMarkId(@Param("markId") Long markId);
+
+    /**
      * Obtiene una página de productos aplicando los filtros opcionales de
      * categoría, marca y rango de precio de venta. Los parámetros {@code null}
      * se ignoran, permitiendo combinar cualquier subconjunto de filtros.

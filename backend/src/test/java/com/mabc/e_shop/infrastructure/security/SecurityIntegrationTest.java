@@ -1,7 +1,9 @@
 package com.mabc.e_shop.infrastructure.security;
 
 import com.jayway.jsonpath.JsonPath;
+import com.mabc.e_shop.infrastructure.persistence.entity.MarkEntity;
 import com.mabc.e_shop.infrastructure.persistence.entity.User;
+import com.mabc.e_shop.infrastructure.persistence.repositories.MarkJpaRepository;
 import com.mabc.e_shop.infrastructure.persistence.repositories.UserJpaRepository;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +21,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.nio.charset.StandardCharsets;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -43,6 +46,9 @@ class SecurityIntegrationTest {
 
     @Autowired
     private UserJpaRepository userRepository;
+
+    @Autowired
+    private MarkJpaRepository markRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -190,6 +196,26 @@ class SecurityIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data", hasSize(2)))
                 .andExpect(jsonPath("$.data[0].password").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("Eliminar marcas exige rol ADMIN (401 anónimo, 403 USER, 200 admin)")
+    void deleteMarksRequiresAdmin() throws Exception {
+        mockMvc.perform(delete("/api/v1/marks/999"))
+                .andExpect(status().isUnauthorized());
+
+        String clientToken = loginAccessToken(CLIENT_EMAIL);
+        mockMvc.perform(delete("/api/v1/marks/999")
+                        .header("Authorization", "Bearer " + clientToken))
+                .andExpect(status().isForbidden());
+
+        MarkEntity seeded = markRepository.save(new MarkEntity(null, "Lenovo", true));
+        String adminToken = loginAccessToken(ADMIN_EMAIL);
+        mockMvc.perform(delete("/api/v1/marks/" + seeded.getId())
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.statusCode").value(200))
+                .andExpect(jsonPath("$.message").value("Marca eliminada correctamente."));
     }
 
     private Cookie refreshCookieFrom(MvcResult result) {

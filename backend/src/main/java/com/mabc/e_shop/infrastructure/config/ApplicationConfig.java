@@ -7,6 +7,7 @@ import com.mabc.e_shop.application.usecase.CreateProductUseCase;
 import com.mabc.e_shop.application.usecase.DecrementItemQuantityFromCartUseCase;
 import com.mabc.e_shop.application.usecase.DeleteCartUseCase;
 import com.mabc.e_shop.application.usecase.DeleteCategoryUseCase;
+import com.mabc.e_shop.application.usecase.DeleteMarkUseCase;
 import com.mabc.e_shop.application.usecase.DeleteProductUseCase;
 import com.mabc.e_shop.application.usecase.GetAllCategoriesUseCase;
 import com.mabc.e_shop.application.usecase.GetAllMarksUseCase;
@@ -74,6 +75,22 @@ public class ApplicationConfig {
         ProductRepository productRepository
     ) {
         return new DeleteCategoryUseCase(categoryRepository, productRepository);
+    }
+
+    /**
+     * Crea el caso de uso que elimina una marca por su identificador,
+     * rechazándola si está asociada a productos.
+     *
+     * @param markRepository     repositorio de marcas.
+     * @param productRepository  repositorio de productos.
+     * @return el caso de uso configurado.
+     */
+    @Bean
+    public DeleteMarkUseCase deleteMarkUseCase(
+        MarkRepository markRepository,
+        ProductRepository productRepository
+    ) {
+        return new DeleteMarkUseCase(markRepository, productRepository);
     }
 
     /**
