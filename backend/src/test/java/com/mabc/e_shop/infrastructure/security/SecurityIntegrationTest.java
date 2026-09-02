@@ -187,17 +187,56 @@ class SecurityIntegrationTest {
     }
 
     @Test
-    @DisplayName("Listar usuarios exige sesión: 401 anónimo, 200 autenticado")
+    @DisplayName("Listar usuarios exige sesión y rol ADMIN: 401 anónimo, 403 USER, 200 ADMIN")
     void listUsersRequiresAuthentication() throws Exception {
         mockMvc.perform(get("/api/v1/users"))
                 .andExpect(status().isUnauthorized());
 
-        String token = loginAccessToken(CLIENT_EMAIL);
+        String clientToken = loginAccessToken(CLIENT_EMAIL);
         mockMvc.perform(get("/api/v1/users")
-                        .header("Authorization", "Bearer " + token))
+                        .header("Authorization", "Bearer " + clientToken))
+                .andExpect(status().isForbidden());
+
+        String adminToken = loginAccessToken(ADMIN_EMAIL);
+        mockMvc.perform(get("/api/v1/users")
+                        .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data", hasSize(2)))
                 .andExpect(jsonPath("$.data[0].password").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("CRUD usuarios exige rol ADMIN: 401 anónimo, 403 USER, 201 ADMIN al crear")
+    void userManagementRequiresAdminRole() throws Exception {
+        String body = """
+                {"name": "Nuevo", "email": "nuevo@tienda.cl", "password": "secreta123", "role": "USER", "active": true}
+                """;
+
+        mockMvc.perform(post("/api/v1/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isUnauthorized());
+
+        String clientToken = loginAccessToken(CLIENT_EMAIL);
+        mockMvc.perform(post("/api/v1/users")
+                        .header("Authorization", "Bearer " + clientToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden());
+
+        String adminToken = loginAccessToken(ADMIN_EMAIL);
+        MvcResult create = mockMvc.perform(post("/api/v1/users")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.role").value("USER"))
+                .andReturn();
+        Number newId = JsonPath.read(create.getResponse().getContentAsString(StandardCharsets.UTF_8), "$.data.id");
+
+        mockMvc.perform(delete("/api/v1/users/" + newId.longValue())
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk());
     }
 
     @Test

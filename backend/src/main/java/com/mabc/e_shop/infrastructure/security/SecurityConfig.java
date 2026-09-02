@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,11 +26,13 @@ import jakarta.servlet.http.HttpServletResponse;
  * categorías, marcas y todo el carrito son públicos para el frontoffice,
  * mientras que la escritura de productos queda restringida a usuarios con
  * rol {@code ADMIN}. Las escrituras de categorías y marcas requieren
- * cualquier usuario autenticado. La autenticación es stateless mediante
+ * cualquier usuario autenticado. La administración de usuarios queda
+ * restringida al rol {@code ADMIN}. La autenticación es stateless mediante
  * tokens JWT procesados por {@link JwtAuthenticationFilter}.
  */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     /**
@@ -80,6 +83,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/marks/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/carts/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/carts/*/checkout").permitAll()
+                .requestMatchers("/api/v1/users/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

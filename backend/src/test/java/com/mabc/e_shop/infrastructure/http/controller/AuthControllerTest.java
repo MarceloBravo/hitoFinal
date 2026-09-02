@@ -4,6 +4,7 @@ import com.mabc.e_shop.infrastructure.http.dto.UserResponseDto;
 import com.mabc.e_shop.infrastructure.http.dto.auth.AuthResponseDto;
 import com.mabc.e_shop.infrastructure.http.dto.auth.LoginRequestDto;
 import com.mabc.e_shop.infrastructure.http.dto.auth.RegisterRequestDto;
+import com.mabc.e_shop.infrastructure.security.AdminUserService;
 import com.mabc.e_shop.infrastructure.security.AuthService;
 import com.mabc.e_shop.infrastructure.security.JwtCookieManager;
 import jakarta.servlet.http.Cookie;
@@ -43,6 +44,9 @@ class AuthControllerTest {
 
     @MockitoBean
     private AuthService authService;
+
+    @MockitoBean
+    private AdminUserService adminUserService;
 
     @MockitoBean
     private JwtCookieManager cookieManager;
@@ -141,7 +145,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("GET /users responde 200 con el listado sin contraseña")
     void listUsersReturns200WithoutPassword() throws Exception {
-        when(authService.listUsers()).thenReturn(List.of(
+        when(adminUserService.list()).thenReturn(List.of(
                 new UserResponseDto(1L, "Ana Rivera", "ana@tienda.cl", "USER", true)));
 
         mockMvc.perform(get("/api/v1/users"))
