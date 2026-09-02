@@ -84,4 +84,14 @@ class GetAllProductsUseCaseTest {
         assertEquals(pageResult, useCase.execute(0, 5, null, null, 100.0, 900.0));
         verify(productRepository).findAll(0, 5, null, null, 100.0, 900.0);
     }
+
+    @Test
+    @DisplayName("Retorna el resultado paginado filtrado por búsqueda de texto delegando en el repositorio")
+    void returnsPaginatedProductsFilteredBySearch() {
+        PageResult pageResult = new PageResult(List.of(), 3);
+        when(productRepository.findAll(0, 5, 9L, 3L, 100.0, 900.0, "lenovo")).thenReturn(pageResult);
+
+        assertEquals(pageResult, useCase.execute(0, 5, 9L, 3L, 100.0, 900.0, "lenovo"));
+        verify(productRepository).findAll(0, 5, 9L, 3L, 100.0, 900.0, "lenovo");
+    }
 }

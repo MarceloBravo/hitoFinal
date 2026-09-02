@@ -112,6 +112,8 @@ public class ProductController {
      * @param markId     identificador de la marca para filtrar (opcional).
      * @param minPrice   precio de venta mínimo para filtrar (opcional).
      * @param maxPrice   precio de venta máximo para filtrar (opcional).
+     * @param search     término de búsqueda de texto sobre nombre, descripción o
+     *                   nombre de la marca (opcional).
      * @return la respuesta paginada de productos y estado HTTP 200.
      */
     @Operation(summary = "Lista los productos de forma paginada",
@@ -129,12 +131,13 @@ public class ProductController {
         @RequestParam(required = false) Long categoryId,
         @RequestParam(required = false) Long markId,
         @RequestParam(required = false) Double minPrice,
-        @RequestParam(required = false) Double maxPrice
+        @RequestParam(required = false) Double maxPrice,
+        @RequestParam(required = false) String search
     ) {
         int safeLimit = Math.max(1, Math.min(limit, 100));
         int safePage = Math.max(1, page);
         int skip = (safePage - 1) * safeLimit;
-        ProductRepository.PageResult result = getAllProductsUseCase.execute(safePage - 1, safeLimit, categoryId, markId, minPrice, maxPrice);
+        ProductRepository.PageResult result = getAllProductsUseCase.execute(safePage - 1, safeLimit, categoryId, markId, minPrice, maxPrice, search);
         List<ProductResponseDto> products = result.content().stream()
                 .map(ProductHttpMapper::toResponse)
                 .toList();

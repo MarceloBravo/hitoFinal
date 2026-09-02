@@ -57,4 +57,41 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long>
                                      @Param("minPrice") Double minPrice,
                                      @Param("maxPrice") Double maxPrice,
                                      Pageable pageable);
+
+    /**
+     * Obtiene una página de productos aplicando los filtros opcionales de
+     * categoría, marca, rango de precio de venta y un término de búsqueda de
+     * texto. Los parámetros {@code null} se ignoran, permitiendo combinar
+     * cualquier subconjunto de filtros con {@code AND}.
+     *
+     * <p>El término {@code search} coincide de forma parcial e insensible a
+     * mayúsculas sobre el nombre de la marca ({@code mark.name}), el nombre del
+     * producto ({@code name}) y su descripción ({@code description}).
+     *
+     * @param categoryId identificador de la categoría, o {@code null}.
+     * @param markId     identificador de la marca, o {@code null}.
+     * @param minPrice   precio de venta mínimo, o {@code null}.
+     * @param maxPrice   precio de venta máximo, o {@code null}.
+     * @param search     término de búsqueda de texto, o {@code null}.
+     * @param pageable   información de paginación.
+     * @return página de productos que cumplen los filtros entregados.
+     */
+    @Query("""
+            select distinct p from ProductEntity p
+            left join p.categories c
+            where (:categoryId is null or c.id = :categoryId)
+              and (:markId is null or p.mark.id = :markId)
+              and (:minPrice is null or p.priceSale >= :minPrice)
+              and (:maxPrice is null or p.priceSale <= :maxPrice)
+              and (:search is null
+                   or lower(p.mark.name) like lower(concat('%', :search, '%'))
+                   or lower(p.name) like lower(concat('%', :search, '%'))
+                   or lower(p.description) like lower(concat('%', :search, '%')))
+            """)
+    Page<ProductEntity> findFilteredWithSearch(@Param("categoryId") Long categoryId,
+                                     @Param("markId") Long markId,
+                                     @Param("minPrice") Double minPrice,
+                                     @Param("maxPrice") Double maxPrice,
+                                     @Param("search") String search,
+                                     Pageable pageable);
 }

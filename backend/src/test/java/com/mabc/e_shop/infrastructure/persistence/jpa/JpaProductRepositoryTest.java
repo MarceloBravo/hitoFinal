@@ -108,6 +108,20 @@ class JpaProductRepositoryTest {
     }
 
     @Test
+    @DisplayName("findAll(page,size,filtros,search): delega en findFilteredWithSearch y convierte al dominio")
+    void findAllFilteredWithSearchMapsToDomain() {
+        when(jpaRepository.findFilteredWithSearch(1L, 3L, 500.0, 800000.0, "lenovo", PageRequest.of(0, 10)))
+                .thenReturn(new PageImpl<>(List.of(productEntity()), PageRequest.of(0, 10), 1));
+
+        ProductRepository.PageResult result = repository.findAll(0, 10, 1L, 3L, 500.0, 800000.0, "lenovo");
+
+        assertEquals(1, result.content().size());
+        assertEquals("Notebook Lenovo", result.content().get(0).getName().value());
+        assertEquals(1, result.total());
+        verify(jpaRepository).findFilteredWithSearch(1L, 3L, 500.0, 800000.0, "lenovo", PageRequest.of(0, 10));
+    }
+
+    @Test
     @DisplayName("save: persiste la entidad y devuelve el producto convertido")
     void savePersistsAndMapsBack() {
         when(jpaRepository.save(any(ProductEntity.class)))
