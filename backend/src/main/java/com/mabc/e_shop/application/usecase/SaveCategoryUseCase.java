@@ -4,8 +4,6 @@ import com.mabc.e_shop.domain.entity.Category;
 import com.mabc.e_shop.domain.repository.CategoryRepository;
 import com.mabc.e_shop.domain.valueobject.Name;
 
-import java.util.List;
-
 /**
  * Caso de uso que crea o actualiza una categoría.
  *

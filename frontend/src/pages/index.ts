@@ -10,3 +10,5 @@ export { CategoriesList } from './categories/list';
 export { CategoriesForm } from './categories/form';
 export { ProductsList } from './products/list';
 export { ProductsForm } from './products/form';
+export { UsersList } from './users/list';
+export { UsersForm } from './users/form';

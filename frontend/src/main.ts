@@ -20,6 +20,9 @@ const routes = {
   '/admin_home/products': 'products-list-page',
   '/admin_home/products/new': 'products-form-page',
   '/admin_home/products/edit/:id': 'products-form-page',
+  '/admin_home/users': 'users-list-page',
+  '/admin_home/users/new': 'users-form-page',
+  '/admin_home/users/edit/:id': 'users-form-page',
   '/404': 'page-404' 
 };
 
