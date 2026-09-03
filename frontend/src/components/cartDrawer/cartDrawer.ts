@@ -1,5 +1,6 @@
 import { Render } from './render';
 import { CartStore, CART_OPEN_EVENT, CART_UPDATED_EVENT } from '../../store/cartStore';
+import { toast } from '../../utils/toast';
 import type { CartItemResponseApi } from '../../interfaces/cartResponseApi';
 
 /**
@@ -98,11 +99,33 @@ export class CartDrawer extends HTMLElement {
                 void CartStore.decrementItem(itemId);
             }
         } else if (action === 'checkout') {
-            void CartStore.checkout();
+            void this.handleCheckout();
         } else if (action === 'clear') {
             void CartStore.clear();
         }
     };
+
+    /**
+     * Concreta la compra del carrito y notifica el resultado mediante un
+     * toast de éxito o error.
+     *
+     * El drawer se cierra de inmediato al pulsar "Finalizar compra" y solo se
+     * vuelve a abrir si la operación falla; así se evita el "flicker" de un
+     * carrito vacío visible antes de ocultarse. Tras el éxito, el toast queda
+     * en pantalla con el carrito cerrado.
+     */
+    private async handleCheckout(): Promise<void> {
+        this.isOpen = false;
+        this.render();
+
+        if (await CartStore.checkout()) {
+            toast('La venta se ha realizado exitosamente', 'success');
+        } else {
+            this.isOpen = true;
+            this.render();
+            toast('No se pudo completar la venta.', 'error');
+        }
+    }
 
     /**
      * Obtiene el id de producto asociado a un id de ítem del carrito.

@@ -2,6 +2,7 @@ import { ProductService } from '../../services/productService';
 import { categoriesService } from '../../services/categoriesService';
 import { marksService } from '../../services/marksService';
 import { CartStore } from '../../store/cartStore';
+import { toast } from '../../utils/toast';
 import type { ResponseInterface } from '../../interfaces/responseInterface';
 import type { ProductResponseApi } from '../../interfaces/productResponseApi';
 import type { CategoriesResponseApi } from '../../interfaces/categoriesResponseApi';
@@ -279,10 +280,15 @@ export class HomePage extends HTMLElement {
 
         const cards = this.querySelectorAll('product-card');
         cards.forEach((card) => {
-            card.addEventListener('add-to-cart', (event) => {
+            card.addEventListener('add-to-cart', async (event) => {
                 const detail = (event as CustomEvent<AddToCartDetail>).detail;
-                if (detail.productId !== undefined) {
-                    void CartStore.addItem(detail.productId);
+                if (detail.productId === undefined) {
+                    return;
+                }
+                if (await CartStore.addItem(detail.productId)) {
+                    toast('El producto ha sido agregado al carrito', 'success');
+                } else {
+                    toast('No se pudo agregar el producto al carrito.', 'error');
                 }
             });
             card.addEventListener('product-view', (event) => {

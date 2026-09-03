@@ -1,6 +1,7 @@
 import { Template } from './template';
 import { ProductService } from '../../services/productService';
 import { CartStore } from '../../store/cartStore';
+import { toast } from '../../utils/toast';
 import type { ProductInterface } from '../../interfaces/ProductInterface';
 
 /**
@@ -81,8 +82,12 @@ export class ProductDetailPage extends HTMLElement {
             return;
         }
         const addButton = this.querySelector<HTMLButtonElement>('#detail-add-to-cart');
-        addButton?.addEventListener('click', () => {
-            void CartStore.addItem(this.product!.id);
+        addButton?.addEventListener('click', async () => {
+            if (await CartStore.addItem(this.product!.id)) {
+                toast('El producto ha sido agregado al carrito', 'success');
+            } else {
+                toast('No se pudo agregar el producto al carrito.', 'error');
+            }
         });
     }
 }
