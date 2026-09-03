@@ -5,3 +5,4 @@ export { ProductCard } from './productCard';
 export { Pagination } from './pagination';
 export { Spinner } from './spinner';
 export { CartDrawer } from './cartDrawer';
+export { ConfirmDialog } from './confirmDialog';

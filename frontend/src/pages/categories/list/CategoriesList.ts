@@ -1,6 +1,7 @@
 import '../../../components';
 import { Template } from './template';
 import { categoriesService } from '../../../services/categoriesService';
+import { confirm, alertMessage } from '../../../utils/dialog';
 import type { CategoriesInterface } from '../../../interfaces/CategoriesInterface';
 
 const PAGE_SIZE = 8;
@@ -203,7 +204,7 @@ export class CategoriesList extends HTMLElement {
             ? `¿Estás seguro de eliminar la categoría "${category.name}"?`
             : '¿Estás seguro de eliminar esta categoría?';
 
-        if (!window.confirm(confirmMessage)) {
+        if (!(await confirm(confirmMessage))) {
             return;
         }
 
@@ -212,7 +213,7 @@ export class CategoriesList extends HTMLElement {
         if (response.ok) {
             await this.loadCategories();
         } else {
-            window.alert(response.data || 'No se pudo eliminar la categoría.');
+            await alertMessage(response.data || 'No se pudo eliminar la categoría.');
         }
     }
 }

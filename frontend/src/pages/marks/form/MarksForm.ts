@@ -1,5 +1,6 @@
 import { Template } from './template';
 import { marksService } from '../../../services/marksService';
+import { alertMessage } from '../../../utils/dialog';
 import type { MarkInterface } from '../../../interfaces/MarkInterface';
 
 /**
@@ -183,7 +184,7 @@ export class MarksForm extends HTMLElement {
             : await marksService.update(this.markId, { name, active });
 
         if (response.ok) {
-            window.alert(this.markId === null ? 'Marca registrada correctamente.' : 'Marca actualizada correctamente.');
+            await alertMessage(this.markId === null ? 'Marca registrada correctamente.' : 'Marca actualizada correctamente.');
             this.navigate('/admin_home/marks');
             return;
         }

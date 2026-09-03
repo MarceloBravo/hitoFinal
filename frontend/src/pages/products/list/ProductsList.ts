@@ -1,6 +1,7 @@
 import '../../../components';
 import { Template } from './template';
 import { ProductService } from '../../../services/productService';
+import { confirm, alertMessage } from '../../../utils/dialog';
 import type { ProductInterface } from '../../../interfaces/ProductInterface';
 
 const PAGE_SIZE = 8;
@@ -144,7 +145,7 @@ export class ProductsList extends HTMLElement {
             ? `¿Estás seguro de eliminar el producto "${product.name}"?`
             : '¿Estás seguro de eliminar este producto?';
 
-        if (!window.confirm(confirmMessage)) {
+        if (!(await confirm(confirmMessage))) {
             return;
         }
 
@@ -153,7 +154,7 @@ export class ProductsList extends HTMLElement {
         if (response.ok) {
             await this.loadProducts();
         } else {
-            window.alert(response.data || 'No se pudo eliminar el producto.');
+            await alertMessage(response.data || 'No se pudo eliminar el producto.');
         }
     }
 }

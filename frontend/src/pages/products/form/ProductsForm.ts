@@ -2,6 +2,7 @@ import { Template } from './template';
 import { ProductService } from '../../../services/productService';
 import { marksService } from '../../../services/marksService';
 import { categoriesService } from '../../../services/categoriesService';
+import { alertMessage } from '../../../utils/dialog';
 import type { ProductInterface } from '../../../interfaces/ProductInterface';
 import type { MarkInterface } from '../../../interfaces/MarkInterface';
 import type { CategoriesInterface } from '../../../interfaces/CategoriesInterface';
@@ -285,7 +286,7 @@ export class ProductsForm extends HTMLElement {
             : await ProductService.update(this.productId, formData);
 
         if (response.ok) {
-            window.alert(this.productId === null ? 'Producto registrado correctamente.' : 'Producto actualizado correctamente.');
+            await alertMessage(this.productId === null ? 'Producto registrado correctamente.' : 'Producto actualizado correctamente.');
             this.navigate('/admin_home/products');
             return;
         }

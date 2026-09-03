@@ -1,5 +1,6 @@
 import { Template } from './template';
 import { categoriesService } from '../../../services/categoriesService';
+import { alertMessage } from '../../../utils/dialog';
 import type { CategoriesInterface } from '../../../interfaces/CategoriesInterface';
 
 /**
@@ -183,7 +184,7 @@ export class CategoriesForm extends HTMLElement {
             : await categoriesService.update(this.categoryId, { name, active });
 
         if (response.ok) {
-            window.alert(this.categoryId === null ? 'Categoría registrada correctamente.' : 'Categoría actualizada correctamente.');
+            await alertMessage(this.categoryId === null ? 'Categoría registrada correctamente.' : 'Categoría actualizada correctamente.');
             this.navigate('/admin_home/categories');
             return;
         }

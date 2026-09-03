@@ -1,5 +1,6 @@
 import { Template } from './template';
 import { usersService } from '../../../services/usersService';
+import { alertMessage } from '../../../utils/dialog';
 import type { UserInterface } from '../../../interfaces/UserInterface';
 import type { UserRequestInterface } from '../../../interfaces/UserRequestInterface';
 
@@ -239,7 +240,7 @@ export class UsersForm extends HTMLElement {
             : await usersService.update(this.userId, payload);
 
         if (response.ok) {
-            window.alert(this.userId === null
+            await alertMessage(this.userId === null
                 ? 'Usuario registrado correctamente.'
                 : 'Usuario actualizado correctamente.');
             this.navigate('/admin_home/users');

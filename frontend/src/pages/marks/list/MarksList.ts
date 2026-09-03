@@ -1,6 +1,7 @@
 import '../../../components';
 import { Template } from './template';
 import { marksService } from '../../../services/marksService';
+import { confirm, alertMessage } from '../../../utils/dialog';
 import type { MarkInterface } from '../../../interfaces/MarkInterface';
 
 const PAGE_SIZE = 8;
@@ -203,7 +204,7 @@ export class MarksList extends HTMLElement {
             ? `¿Estás seguro de eliminar la marca "${mark.name}"?`
             : '¿Estás seguro de eliminar esta marca?';
 
-        if (!window.confirm(confirmMessage)) {
+        if (!(await confirm(confirmMessage))) {
             return;
         }
 
@@ -212,7 +213,7 @@ export class MarksList extends HTMLElement {
         if (response.ok) {
             await this.loadMarks();
         } else {
-            window.alert(response.data || 'No se pudo eliminar la marca.');
+            await alertMessage(response.data || 'No se pudo eliminar la marca.');
         }
     }
 }

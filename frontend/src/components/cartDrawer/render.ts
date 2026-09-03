@@ -85,7 +85,13 @@ export class Render {
                 </div>
             `;
 
-        const showOpen: boolean = this.open && !animate;
+        // Al animar la apertura, el panel se dibuja cerrado (sin `open`) y la clase
+        // se agrega en el frame siguiente; al animar el cierre, se dibuja abierto
+        // (`open`) y se retira en el frame siguiente. Así el navegador pinta el
+        // estado de partida y la transición CSS desplaza el panel lateralmente.
+        const startingOpen: boolean = !animate ? this.open : false;
+        const animateClose: boolean = animate && !this.open;
+        const showOpen: boolean = startingOpen || animateClose;
         const htmlString: string = `
             <div class="drawer-overlay ${showOpen ? 'open' : ''}" data-overlay></div>
             <aside class="drawer-panel ${showOpen ? 'open' : ''}">
@@ -108,13 +114,22 @@ export class Render {
         this.root.appendChild(style);
 
         if (animate && this.open) {
-            // Se presiona el estado de entrada en el frame siguiente (doble
-            // requestAnimationFrame) para que el navegador pinte el panel en
-            // su posición de reposo antes de animarlo hacia su posición final.
+            // Entrada: se presiona el estado cerrado en el frame siguiente (doble
+            // requestAnimationFrame) para que el navegador pinte el panel fuera de
+            // pantalla antes de animarlo hacia su posición final.
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
                     this.root.querySelector('.drawer-panel')?.classList.add('open');
                     this.root.querySelector('.drawer-overlay')?.classList.add('open');
+                });
+            });
+        } else if (animate && !this.open) {
+            // Salida: se presiona el estado abierto, y en el frame siguiente se
+            // retira la clase. La transición CSS desplaza el panel hacia la derecha.
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    this.root.querySelector('.drawer-panel')?.classList.remove('open');
+                    this.root.querySelector('.drawer-overlay')?.classList.remove('open');
                 });
             });
         }

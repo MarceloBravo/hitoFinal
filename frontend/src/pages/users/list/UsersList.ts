@@ -1,6 +1,7 @@
 import '../../../components';
 import { Template } from './template';
 import { usersService } from '../../../services/usersService';
+import { confirm, alertMessage } from '../../../utils/dialog';
 import type { UserInterface } from '../../../interfaces/UserInterface';
 
 const PAGE_SIZE = 8;
@@ -109,7 +110,7 @@ export class UsersList extends HTMLElement {
         } else {
             this.users = [];
             if (!response.ok) {
-                window.alert(response.data || 'No se pudieron cargar los usuarios.');
+                await alertMessage(response.data || 'No se pudieron cargar los usuarios.');
             }
         }
 
@@ -199,7 +200,7 @@ export class UsersList extends HTMLElement {
             ? `¿Estás seguro de eliminar al usuario "${user.name}"?`
             : '¿Estás seguro de eliminar a este usuario?';
 
-        if (!window.confirm(confirmMessage)) {
+        if (!(await confirm(confirmMessage))) {
             return;
         }
 
@@ -208,7 +209,7 @@ export class UsersList extends HTMLElement {
         if (response.ok) {
             await this.loadUsers();
         } else {
-            window.alert(response.data || 'No se pudo eliminar el usuario.');
+            await alertMessage(response.data || 'No se pudo eliminar el usuario.');
         }
     }
 }
