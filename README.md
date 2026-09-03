@@ -26,6 +26,16 @@ src/main/java/com/mabc/hitoFinal/
 
 - JDK 17+
 - Docker Desktop (o motor Docker con Compose v2)
+- Node.js 18+ (y npm) para el frontend
+
+## Estructura del Repositorio
+
+```
+hitoFinal/
+├── backend/     # Microservicio Spring Boot (API REST)
+├── frontend/    # SPA en TypeScript + Vite (Web Components)
+└── README.md
+```
 
 ## 1. Levantar la Base de Datos
 
@@ -46,7 +56,18 @@ docker compose up -d
 
 El servicio `postgres` queda disponible en `localhost:5432` con volumen persistente (`postgres_data`), por lo que los datos sobreviven a reinicios del contenedor.
 
-## 2. Ejecutar la Aplicación en Modo Desarrollo
+## 2. Ejecutar el Backend (API REST)
+
+Configura las credenciales en `backend/.env` (usa `backend/.env.example` como plantilla; incluye la base de datos y el secreto JWT):
+
+Instala las dependencias con Maven Wrapper (solo la primera vez):
+
+```bash
+cd backend
+./mvnw dependency:go-offline
+```
+
+Luego inicia la aplicación:
 
 ```bash
 ./mvnw spring-boot:run
@@ -54,9 +75,39 @@ El servicio `postgres` queda disponible en `localhost:5432` con volumen persiste
 
 > En Windows: `.\mvnw spring-boot:run`
 
-La aplicación arranca con el perfil `dev` por defecto (`spring.profiles.default: dev`). Para producción se debe iniciar explícitamente con `-Dspring-boot.run.profiles=prod`.
+La aplicación arranca con el perfil `dev` por defecto (`spring.profiles.default: dev`) y queda escuchando en `http://localhost:8080`. Para producción se debe iniciar explícitamente con `-Dspring-boot.run.profiles=prod`.
 
-## 3. Documentación y Pruebas de Contratos
+> **Nota:** el frontend está codificado por defecto contra `http://localhost:8080/api/v1` (ver `frontend/.env`). Asegúrate de tener el backend corriendo antes de levantar el frontend.
+
+## 3. Ejecutar el Frontend (SPA)
+
+Configura el archivo `frontend/.env` (usa `frontend/.env.example` como plantilla). Las variables relevantes para apuntar a la API local son:
+
+```env
+VITE_API_URL=http://localhost:8080/api/v1
+VITE_IMAGE_URL=http://localhost:8080
+VITE_PLACEHOLDER_IMAGE=https://via.placeholder.com/150
+VITE_PRODUCTS_PER_PAGE=12
+```
+
+Instala las dependencias (solo la primera vez) y levanta el servidor de desarrollo:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Vite inicia un servidor de desarrollo (por defecto en `http://localhost:5173`) con hot-reload. Abre esa URL en el navegador.
+
+Para generar el bundle de producción:
+
+```bash
+npm run build
+npm run preview   # sirve el build de producción para inspección local
+```
+
+## 4. Documentación y Pruebas de Contratos
 
 Con la aplicación corriendo bajo el perfil `dev`:
 
