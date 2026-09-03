@@ -115,6 +115,7 @@ Con la aplicación corriendo bajo el perfil `dev`:
 |---|---|
 | Swagger UI | http://localhost:8080/swagger-ui.html/index.html |
 | OpenAPI JSON | http://localhost:8080/api-docs |
+| Wiki | https://deepwiki.com/MarceloBravo/hitoFinal/3-backend-infrastructure-layer |
 
 > 🔒 **Aislamiento hermético:** en el perfil `prod` (y por defecto en la configuración base), `springdoc.api-docs.enabled=false` y `springdoc.swagger-ui.enabled=false`, eliminando la superficie de ataque fuera del entorno local.
 
