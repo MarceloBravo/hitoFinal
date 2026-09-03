@@ -84,9 +84,9 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long>
               and (:minPrice is null or p.priceSale >= :minPrice)
               and (:maxPrice is null or p.priceSale <= :maxPrice)
               and (:search is null
-                   or lower(p.mark.name) like lower(concat('%', :search, '%'))
-                   or lower(p.name) like lower(concat('%', :search, '%'))
-                   or lower(p.description) like lower(concat('%', :search, '%')))
+                   or lower(p.mark.name) like lower(concat('%', cast(:search as string), '%'))
+                   or lower(p.name) like lower(concat('%', cast(:search as string), '%'))
+                   or lower(p.description) like lower(concat('%', cast(:search as string), '%')))
             """)
     Page<ProductEntity> findFilteredWithSearch(@Param("categoryId") Long categoryId,
                                      @Param("markId") Long markId,

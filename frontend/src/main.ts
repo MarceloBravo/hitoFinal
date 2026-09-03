@@ -8,6 +8,7 @@ import { CartStore } from './store/cartStore';
 const routes = {
   '/': 'home-page',
   '/home': 'home-page',
+  '/product/:id': 'product-detail-page',
   '/contact': 'contact-page',
   '/admin_login': 'admin-login-page',
   '/admin_home': 'admin-home-page',

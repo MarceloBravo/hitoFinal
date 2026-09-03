@@ -285,7 +285,23 @@ export class HomePage extends HTMLElement {
                     void CartStore.addItem(detail.productId);
                 }
             });
+            card.addEventListener('product-view', (event) => {
+                const detail = (event as CustomEvent<{ productId?: number }>).detail;
+                if (detail.productId !== undefined) {
+                    this.navigate(`/product/${detail.productId}`);
+                }
+            });
         });
+    }
+
+    /**
+     * Navega hacia la ruta entregada sin recargar la página.
+     *
+     * @param path Ruta de destino.
+     */
+    private navigate(path: string): void {
+        window.history.pushState({}, '', path);
+        window.dispatchEvent(new PopStateEvent('popstate'));
     }
 }
 

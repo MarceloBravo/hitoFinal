@@ -41,7 +41,7 @@ export class Render {
     render(){
          const htmlString: string = `
             <article class="product-card">
-                <img src="${this.img}" alt="${this.title}">
+                <img src="${this.img}" alt="${this.title}" class="product-image" title="Ver detalle del producto">
                 <h3>${this.title}</h3>
                 <p>${this.description}</p>
                 <span>$${this.price}</span>

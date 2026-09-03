@@ -65,6 +65,19 @@ export class ProductCard extends HTMLElement {
       const render = new Render(root, img, title, description, price);
       render.render();
 
+      const image = root.querySelector<HTMLElement>('.product-image');
+      image?.addEventListener('click', () => {
+          const id = productId !== null && productId !== '' ? Number(productId) : undefined;
+          if (id === undefined) {
+              return;
+          }
+          this.dispatchEvent(new CustomEvent('product-view', {
+              detail: { productId: id },
+              bubbles: true,
+              composed: true,
+          }));
+      });
+
       const addButton = root.querySelector<HTMLButtonElement>('.add-to-cart');
       addButton?.addEventListener('click', () => {
           const id = productId !== null && productId !== '' ? Number(productId) : undefined;

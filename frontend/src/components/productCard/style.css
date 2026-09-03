@@ -20,6 +20,15 @@
   flex-shrink: 0;
 }
 
+.product-card .product-image {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.product-card .product-image:hover {
+  transform: scale(1.03);
+}
+
 .product-card h3 {
   margin: 0 0 0.45rem;
   color: #111827;

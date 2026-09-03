@@ -12,3 +12,4 @@ export { ProductsList } from './products/list';
 export { ProductsForm } from './products/form';
 export { UsersList } from './users/list';
 export { UsersForm } from './users/form';
+export { ProductDetailPage } from './productDetail';
